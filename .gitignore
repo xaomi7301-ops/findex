@@ -12,3 +12,8 @@ dist/
 .coverage
 .idea/
 .vscode/
+
+# Built index files are regenerated locally and must not be committed.
+index.bin
+index.json
+index-with-positions.bin
