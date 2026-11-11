@@ -14,9 +14,9 @@ from collections.abc import Callable, Iterable
 from concurrent.futures import ProcessPoolExecutor, ThreadPoolExecutor
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Literal
+from typing import Literal, cast
 
-from findex.index import DocMeta, InvertedIndex, Posting
+from findex.index import DocMeta, InvertedIndex, Posting, PostingList
 from findex.tokenize import tokenize
 
 logger = logging.getLogger(__name__)
@@ -191,7 +191,9 @@ def merge(partials: Iterable[PartialIndex]) -> InvertedIndex:
             )
     for target in merged.values():
         target.sort(key=lambda posting: posting.doc_id)
-    return InvertedIndex(merged, lengths, metadata, "slots", with_positions)
+    # Runtime values are all list[Posting]; the public API allows other posting types.
+    canonical = cast("dict[str, PostingList]", merged)
+    return InvertedIndex(canonical, lengths, metadata, "slots", with_positions)
 
 
 def build_parallel_index(
@@ -219,14 +221,8 @@ def build_parallel_index(
             completed += len(task.paths)
             if on_document is not None:
                 on_document(completed)
-    else:
-        pool_class = ThreadPoolExecutor if executor == "threads" else ProcessPoolExecutor
-        kwargs = (
-            {"mp_context": multiprocessing.get_context("spawn")}
-            if executor == "processes"
-            else {}
-        )
-        with pool_class(max_workers=workers, **kwargs) as pool:
+    elif executor == "threads":
+        with ThreadPoolExecutor(max_workers=workers) as pool:
             try:
                 for task, partial in zip(tasks, pool.map(build_partial, tasks), strict=True):
                     partials.append(partial)
@@ -234,7 +230,19 @@ def build_parallel_index(
                     if on_document is not None:
                         on_document(completed)
             except Exception as exc:
-                raise RuntimeError(f"{executor} indexing worker failed") from exc
+                raise RuntimeError("threads indexing worker failed") from exc
+    else:
+        with ProcessPoolExecutor(
+            max_workers=workers, mp_context=multiprocessing.get_context("spawn")
+        ) as pool:
+            try:
+                for task, partial in zip(tasks, pool.map(build_partial, tasks), strict=True):
+                    partials.append(partial)
+                    completed += len(task.paths)
+                    if on_document is not None:
+                        on_document(completed)
+            except Exception as exc:
+                raise RuntimeError("processes indexing worker failed") from exc
 
     started_merge = time.perf_counter()
     result = merge(partials)
