@@ -12,7 +12,7 @@ from array import array
 from dataclasses import asdict
 from enum import Enum
 from pathlib import Path
-from typing import NoReturn
+from typing import Annotated, NoReturn
 
 import typer
 from rich.console import Console
@@ -44,9 +44,9 @@ def _fail(exc: Exception) -> NoReturn:
 
 @app.callback()
 def _configure(
-    verbose: int = typer.Option(
-        0, "--verbose", "-v", count=True, help="-v: INFO; -vv: DEBUG (stderr)."
-    ),
+    verbose: Annotated[
+        int, typer.Option("--verbose", "-v", count=True, help="-v: INFO; -vv: DEBUG.")
+    ] = 0,
 ) -> None:
     """Configure logging once at the outer CLI entry point."""
     level = logging.DEBUG if verbose >= 2 else logging.INFO if verbose else logging.WARNING
@@ -60,10 +60,12 @@ def _configure(
 
 @app.command("index")
 def index_command(
-    corpus: Path = typer.Argument(..., help="Directory containing UTF-8 .txt files."),
-    out: Path = typer.Option(Path("index.bin"), "--out", help="Pickle or .json index path."),
-    positions: bool = typer.Option(False, "--positions", help="Store token positions."),
-    limit: int | None = typer.Option(None, "--limit", min=0, help="Maximum documents."),
+    corpus: Annotated[Path, typer.Argument(help="Directory with UTF-8 .txt files.")],
+    out: Annotated[Path, typer.Option("--out", help="Pickle or .json index.")] = Path(
+        "index.bin"
+    ),
+    positions: Annotated[bool, typer.Option("--positions")] = False,
+    limit: Annotated[int | None, typer.Option("--limit", min=0)] = None,
 ) -> None:
     """Build and save an index with a Rich progress indicator."""
     try:
@@ -96,12 +98,12 @@ def index_command(
 
 @app.command("search")
 def search_command(
-    index: Path = typer.Argument(..., help="Trusted index file (.bin or .json)."),
-    query: str = typer.Argument(..., help="Boolean/phrase query; quote as one argument."),
-    k: int = typer.Option(10, "--k", min=0, help="Maximum ranked results."),
-    scorer: ScorerChoice = typer.Option(ScorerChoice.bm25, "--scorer"),
-    is_json: bool = typer.Option(False, "--json", help="Write JSON Lines to stdout."),
-    corpus: Path | None = typer.Option(None, "--corpus", help="Corpus root for snippets."),
+    index: Annotated[Path, typer.Argument(help="Trusted index (.bin or .json).")],
+    query: Annotated[str, typer.Argument(help="Boolean or phrase query.")],
+    k: Annotated[int, typer.Option("--k", min=0)] = 10,
+    scorer: Annotated[ScorerChoice, typer.Option("--scorer")] = ScorerChoice.bm25,
+    is_json: Annotated[bool, typer.Option("--json", help="JSON Lines on stdout.")] = False,
+    corpus: Annotated[Path | None, typer.Option("--corpus")] = None,
 ) -> None:
     """Search a saved index; Rich table, or JSONL suitable for a pipe."""
     try:
@@ -141,7 +143,7 @@ def _total_frequency(postings: PostingList) -> int:
 
 @app.command("stats")
 def stats_command(
-    index: Path = typer.Argument(..., help="Trusted index file (.bin or .json)."),
+    index: Annotated[Path, typer.Argument(help="Trusted index (.bin or .json).")],
 ) -> None:
     """Show document/token/vocabulary statistics from a saved index."""
     try:
