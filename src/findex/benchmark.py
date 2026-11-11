@@ -50,7 +50,9 @@ class PositionsRow(TypedDict):
     ratio: float
 
 
-def benchmark_format(index: InvertedIndex, path: Path, format: Literal["pickle", "json"]) -> FormatRow:
+def benchmark_format(
+    index: InvertedIndex, path: Path, format: Literal["pickle", "json"]
+) -> FormatRow:
     start = time.perf_counter()
     save(index, path, format=format)
     save_time = time.perf_counter() - start
@@ -67,7 +69,9 @@ def benchmark_format(index: InvertedIndex, path: Path, format: Literal["pickle",
     )
 
 
-def benchmark_storage(root: Path, storage: StorageName, output: Path) -> tuple[StorageRow, InvertedIndex]:
+def benchmark_storage(
+    root: Path, storage: StorageName, output: Path
+) -> tuple[StorageRow, InvertedIndex]:
     gc.collect()
     tracemalloc.start()
     start = time.perf_counter()
