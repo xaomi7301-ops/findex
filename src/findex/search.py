@@ -77,7 +77,9 @@ def _lex(query: str) -> list[str]:
     return tokens
 
 
-def search(index: InvertedIndex, query: str, *, engine: Literal["merge", "set"] = "merge") -> list[int]:
+def search(
+    index: InvertedIndex, query: str, *, engine: Literal["merge", "set"] = "merge"
+) -> list[int]:
     """Evaluate left-to-right Boolean query, with adjacent terms as AND.
 
     Examples: 'python typing', 'python OR json', 'python NOT legacy',
