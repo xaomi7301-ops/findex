@@ -20,8 +20,8 @@ from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
 from findex.index import PostingList
-from findex.parallel import build_parallel_index
 from findex.object_model import open_index
+from findex.parallel import build_parallel_index
 from findex.ranking import BM25, Scorer, TfIdf, ranked_search
 from findex.store import load, save
 
