@@ -775,10 +775,25 @@ uv run python -m findex.lab05_benchmark plot benchmarks/lab05-results.json --out
 
 ### Free-threaded CPython 3.13t (M4)
 
+У Windows встановлення всіх залежностей CLI у середовище 3.13t
+може вимагати компіляції `pydantic-core` через Rust/MSVC
+(`link.exe not found`). Для **самого бенчмарку** CLI не потрібен:
+використовуємо окреме середовище `--no-project` та готовий wheel
+`psutil 7.2.2` для `cp313t-win_amd64` без компіляції.
+
 ~~~powershell
 uv python install 3.13t
-uv run --python 3.13t python -m findex.lab05_benchmark run data/python_docs --executors serial,threads --workers 1,2,4,8,all --repeats 3 --append --out benchmarks/lab05-results.json
+& (uv python find 3.13t) -c "import sys; print('GIL enabled:', sys._is_gil_enabled())"
+$env:PYTHONPATH = (Resolve-Path .\src).Path
+uv run --no-project --python 3.13t --with "psutil==7.2.2" python -c "import sys, psutil; print('GIL enabled:', sys._is_gil_enabled()); print('psutil:', psutil.__version__)"
+uv run --no-project --python 3.13t --with "psutil==7.2.2" python -m findex.lab05_benchmark run data/python_docs --executors serial,threads --workers 1,2,4,8,all --repeats 3 --append --out benchmarks/lab05-results.json
 ~~~
+
+Важливо: `--no-project` оминає Typer/Pydantic, не перемикає
+проєктний `.venv` і не перезаписує залежності лабораторних №1–4.
+`PYTHONPATH` дозволяє завантажити модулі з `src/findex`.
+PNG створюємо пізніше зі звичайного середовища Python 3.13,
+де вже встановлено Matplotlib: `uv sync --python 3.13`.
 
 Скрипт друкує **sys._is_gil_enabled(): False/True**. Рядки
 позначаються як GIL-off **лише коли значення справді False**;
