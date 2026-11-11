@@ -4,16 +4,13 @@ from __future__ import annotations
 
 import logging
 import time
+from collections.abc import Callable
 from functools import wraps
-from typing import Callable, ParamSpec, TypeVar
-
-P = ParamSpec("P")
-R = TypeVar("R")
 
 logger = logging.getLogger("findex.timing")
 
 
-def timed(func: Callable[P, R]) -> Callable[P, R]:
+def timed[**P, R](func: Callable[P, R]) -> Callable[P, R]:
     """Log a duration even when the wrapped function raises."""
 
     @wraps(func)
