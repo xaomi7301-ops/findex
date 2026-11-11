@@ -1,3 +1,3 @@
-"""findex: a small, extendable full-text search engine project."""
+"""findex: an installable full-text search engine and ranking CLI."""
 
-__version__ = "0.1.0"
+__version__ = "0.4.0"
