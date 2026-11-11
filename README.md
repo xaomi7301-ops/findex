@@ -1,5 +1,7 @@
 # findex — Лабораторна робота №1
 
+[![CI](https://github.com/xaomi7301-ops/findex/actions/workflows/ci.yml/badge.svg)](https://github.com/xaomi7301-ops/findex/actions/workflows/ci.yml)
+
 **Курс:** Python — будуємо власну пошукову систему `findex`  
 **Тема:** Ітератори, генератори та власний корпус  
 **Виконав:** Калініченко Олександр Олександрович
@@ -524,3 +526,112 @@ index-lab03.bin зберігається локально і виключени�
 **Здача:** той самий публічний GitHub-репозиторій із тегом lab-03;
 після перевірок і внесення реального P@5. Захист — п'ятихвилинне
 демо з with open_index() і питаннями з LAB03_DEFENSE.md.
+
+
+---
+
+## Лабораторна №4 — типи, тести, пакування та CLI
+
+Ця частина перетворює **той самий findex** із лабораторних №1–3 на
+інструмент із командою \`findex\`, статичною перевіркою та колесом
+встановлення (\`wheel\`). Версія пакета — **0.4.0**.
+
+### Що реалізовано
+
+- \`pyproject.toml\`: метадані, \`[project.scripts]\` із
+  \`findex = "findex.cli:app"\`, залежності \`typer\` / \`rich\` та
+  dev-пакети \`pytest\`, \`pytest-cov\`, \`hypothesis\`,
+  \`ruff\`, \`pyright\`.
+- \`[tool.pyright]\` використовує \`typeCheckingMode = "strict"\`;
+  типи перевіряються в усьому \`src/findex\` без виключення модулів.
+  \`Scorer\` — \`Protocol\` із структурною перевіркою BM25 / TF-IDF.
+- \`src/findex/cli.py\` — Typer з підкомандами \`index\`,
+  \`search\`, \`stats\`. Індексація має індикатор прогресу Rich,
+  пошук — таблицю зі скором, назвою та сніпетом.
+- \`findex search ... --json\` видає JSON Lines **тільки в stdout**.
+  Діагностика, логи та прогрес спрямовані у stderr.
+  Глобальні \`-v\` та \`-vv\` вмикають INFO / DEBUG відповідно;
+  передбачувані помилки показуються одним рядком і ненульовим
+  кодом завершення.
+- У \`tests/conftest.py\` є маленький Unicode-корпус, а
+  \`tests/test_lab04.py\` містить \`pytest.mark.parametrize\`,
+  тестування через \`typer.testing.CliRunner\` та **три властивості
+  Hypothesis**: індекс після save/load зберігає дані; постінги
+  впорядковані; результати двовказівникового merge збігаються із set.
+- \`.github/workflows/ci.yml\` запускає \`uv sync\`, \`ruff\`,
+  \`pyright strict\`, \`pytest --cov\`, \`uv build\` та перевірку
+  встановлення wheel; бейдж CI наведено у верхній частині README.
+- \`.github/workflows/release.yml\` передбачає створення GitHub
+  Release і прикріплення wheel після публікації тегу \`v0.4.0\`.
+
+### Встановлення та використання (PowerShell)
+
+\`\`\`powershell
+git pull --ff-only origin main
+uv lock
+uv sync
+uv run pyright
+uv run ruff check .
+uv run ruff format --check .
+uv run pytest -q --cov=findex --cov-report=term-missing
+uv tool install . --force
+findex --help
+\`\`\`
+
+Команди працюють після \`uv tool install .\` з **будь-якої папки**,
+оскільки встановлюється точка входу \`findex\` (якщо папка
+виконуваних інструментів uv доступна в PATH).
+
+\`\`\`powershell
+findex index data/python_docs --out index-lab04.bin --positions
+findex search index-lab04.bin "python OR asyncio" --corpus data/python_docs --k 5
+findex search index-lab04.bin "python" --json --k 2 > results.jsonl
+findex stats index-lab04.bin
+uv build
+\`\`\`
+
+Для демонстрації складного запиту з фразою у Windows PowerShell:
+
+\`\`\`powershell
+uv --% run findex search index-lab04.bin "python AND (async OR await) NOT java \\"event loop\\"" --corpus data/python_docs
+\`\`\`
+
+**Безпека:** pickle-індекс можна завантажувати лише з довіреного
+джерела, адже pickle-десеріалізація може виконувати сторонній код.
+Для обміну текстовими індексами є JSON.
+
+### Перевірки й покриття тестами
+
+Показник покриття треба отримати **з реального запуску**
+\`uv run pytest -q --cov=findex --cov-report=term-missing\`
+після встановлення нових dev-залежностей. До запуску він не
+заповнюється вигаданим числом.
+
+| Показник | Стан |
+|---|---|
+| Pyright strict | Перевіряється в GitHub Actions |
+| Ruff lint / format | Перевіряється в GitHub Actions |
+| Pytest + Hypothesis | Підлягає перевірці разом із новими залежностями |
+| Покриття тестами | З'явиться після локального запуску \`--cov\` |
+| Wheel + чисте середовище | Перевіряється під час CI / Release |
+
+**Свідомо поза покриттям:** мережеве завантаження справжнього корпусу,
+поведінка термінала в різних ОС, реальні десятки мегабайт даних
+та небезпечні випадкові pickle-файли. Ці частини тестуються окремо
+інтеграційними перевірками або потребують зовнішнього середовища.
+
+### Пакування та випуск релізу
+
+\`\`\`powershell
+uv build
+uv tool install . --force
+findex --help
+\`\`\`
+
+Тег **lab-04** позначає здану лабораторну; **v0.4.0**
+запускає створення релізу з \`dist/findex-0.4.0-py3-none-any.whl\`
+(точне ім'я артефакту підтверджується після \`uv build\`).
+Не створюйте теги, доки CI не зелений, \`uv.lock\` не комітнуто
+та встановлення wheel не перевірено.
+
+Матеріал для захисту: [LAB04_DEFENSE.md](LAB04_DEFENSE.md).
