@@ -21,12 +21,12 @@ jobs:
         run: uv python install 3.13
       - name: Sync from uv.lock
         run: uv sync
+      - name: Pyright strict
+        run: uv run pyright
       - name: Ruff lint
         run: uv run ruff check .
       - name: Ruff format
         run: uv run ruff format --check .
-      - name: Pyright strict
-        run: uv run pyright
       - name: Pytest and coverage
         run: uv run pytest -q --cov=findex --cov-report=term-missing
       - name: Build wheel
