@@ -13,7 +13,6 @@ from pathlib import Path
 
 from findex.index import DocMeta, InvertedIndex, Posting
 
-
 FORMAT_VERSION = 1
 
 

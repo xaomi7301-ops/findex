@@ -1,0 +1,85 @@
+{
+  "corpus": "data\\python_docs",
+  "repetitions": 100,
+  "storage": [
+    {
+      "storage": "plain",
+      "documents": 514,
+      "tokens": 1921193,
+      "vocabulary": 41255,
+      "build_s": 12.007514,
+      "build_peak_mib": 64.427,
+      "format": "pickle",
+      "file_bytes": 7399578,
+      "save_s": 0.546905,
+      "load_s": 0.262746
+    },
+    {
+      "storage": "slots",
+      "documents": 514,
+      "tokens": 1921193,
+      "vocabulary": 41255,
+      "build_s": 12.134379,
+      "build_peak_mib": 53.376,
+      "format": "pickle",
+      "file_bytes": 5514461,
+      "save_s": 0.766065,
+      "load_s": 1.206316
+    },
+    {
+      "storage": "array",
+      "documents": 514,
+      "tokens": 1921193,
+      "vocabulary": 41255,
+      "build_s": 11.930931,
+      "build_peak_mib": 38.189,
+      "format": "pickle",
+      "file_bytes": 3640072,
+      "save_s": 0.043634,
+      "load_s": 0.041126
+    }
+  ],
+  "formats": [
+    {
+      "format": "pickle",
+      "file_bytes": 5514461,
+      "save_s": 0.831897,
+      "load_s": 0.946982
+    },
+    {
+      "format": "json",
+      "file_bytes": 3990410,
+      "save_s": 1.486083,
+      "load_s": 0.904788
+    }
+  ],
+  "queries": [
+    {
+      "query": "the in",
+      "merge": {
+        "median_us": 85.8,
+        "result_count": 499
+      },
+      "set": {
+        "median_us": 49.5,
+        "result_count": 499
+      }
+    },
+    {
+      "query": "0'th 00000",
+      "merge": {
+        "median_us": 7.2,
+        "result_count": 0
+      },
+      "set": {
+        "median_us": 7.4,
+        "result_count": 0
+      }
+    }
+  ],
+  "positions": {
+    "without_positions_bytes": 5514461,
+    "with_positions_bytes": 12034472,
+    "ratio": 2.182
+  }
+}
