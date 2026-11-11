@@ -19,7 +19,7 @@ import time
 from collections.abc import Callable, Sequence
 from dataclasses import asdict, dataclass
 from pathlib import Path
-from typing import cast
+from typing import Protocol, cast
 
 import psutil
 
@@ -327,9 +327,29 @@ def benchmark(
     return report
 
 
+class _PlotAxes(Protocol):
+    """Small typed interface for Matplotlib's partially typed dynamic Axes API."""
+
+    def plot(
+        self, x: Sequence[int | float], y: Sequence[int | float],
+        *args: str, **kwargs: object
+    ) -> object: ...
+
+    def set_xlabel(self, label: str) -> object: ...
+
+    def set_ylabel(self, label: str) -> object: ...
+
+    def set_title(self, label: str) -> object: ...
+
+    def set_xticks(self, ticks: Sequence[int]) -> object: ...
+
+    def grid(self, **kwargs: object) -> object: ...
+
+    def legend(self) -> object: ...
+
+
 def plot(report_path: Path, image_path: Path) -> None:
     """Produce a committed PNG with ideal linear speedup for comparison."""
-    from matplotlib.axes import Axes
     from matplotlib.figure import Figure
 
     data = cast("dict[str, object]", json.loads(report_path.read_text(encoding="utf-8")))
@@ -346,7 +366,7 @@ def plot(report_path: Path, image_path: Path) -> None:
         groups.setdefault(key, []).append((count, speedup))
 
     figure = Figure(figsize=(9, 5.5))
-    axes: Axes = figure.add_subplot(1, 1, 1)
+    axes = cast("_PlotAxes", figure.add_subplot(1, 1, 1))
     axes.plot([1, maximum], [1, maximum], "--", label="Ideal linear")
     for (variant, executor), values in sorted(groups.items()):
         points = sorted(values)
@@ -364,7 +384,9 @@ def plot(report_path: Path, image_path: Path) -> None:
     axes.legend()
     figure.tight_layout()
     image_path.parent.mkdir(parents=True, exist_ok=True)
-    figure.savefig(image_path, dpi=160)
+    # Matplotlib's dynamic savefig signature is incompletely typed in upstream stubs.
+    save_image = cast("Callable[..., object]", figure.savefig)
+    save_image(image_path, dpi=160)
     print(f"Saved chart: {image_path}")
 
 
