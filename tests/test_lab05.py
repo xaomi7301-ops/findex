@@ -109,8 +109,15 @@ def test_cli_new_options_and_stored_file(tiny_corpus: Path, tmp_path: Path) -> N
     result = runner.invoke(
         app,
         [
-            "index", str(tiny_corpus), "--out", str(output), "--executor", "threads",
-            "--workers", "3", "--positions",
+            "index",
+            str(tiny_corpus),
+            "--out",
+            str(output),
+            "--executor",
+            "threads",
+            "--workers",
+            "3",
+            "--positions",
         ],
     )
     assert result.exit_code == 0, result.output
