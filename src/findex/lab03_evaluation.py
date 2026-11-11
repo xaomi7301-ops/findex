@@ -115,8 +115,8 @@ def evaluate(index: Index, label_path: Path, out_path: Path) -> dict[str, object
             }
         )
     average: dict[str, float] = {
-        key: round(sum(row[key]["precision_at_5"] for row in rows) / len(rows), 3)
-        for key in ("tfidf", "bm25")
+        "tfidf": round(sum(row["tfidf"]["precision_at_5"] for row in rows) / len(rows), 3),
+        "bm25": round(sum(row["bm25"]["precision_at_5"] for row in rows) / len(rows), 3),
     }
     output: dict[str, object] = {
         "corpus": str(index.corpus_root),
