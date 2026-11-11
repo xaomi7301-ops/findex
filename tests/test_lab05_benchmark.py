@@ -12,6 +12,7 @@ from findex.lab05_benchmark import (
     _parse_workers,
     benchmark,
     plot,
+    python_abi,
     summarise,
 )
 
@@ -23,6 +24,21 @@ def test_parse_worker_counts_and_executor_names() -> None:
         _parse_workers("0")
     with pytest.raises(ValueError):
         _parse_executors("unknown")
+
+
+@pytest.mark.parametrize(
+    ("config_flag", "expected"),
+    [(None, "standard"), (0, "standard"), (1, "free-threaded"), ("1", "free-threaded")],
+)
+def test_python_abi_cross_platform(
+    monkeypatch: pytest.MonkeyPatch, config_flag: object, expected: str
+) -> None:
+    """Windows does not expose sys.abiflags, so use sysconfig instead."""
+    monkeypatch.setattr(
+        "findex.lab05_benchmark.sysconfig.get_config_var",
+        lambda _name: config_flag,
+    )
+    assert python_abi() == expected
 
 
 def test_summary_needs_matching_serial_baseline() -> None:
