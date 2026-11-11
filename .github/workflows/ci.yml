@@ -1,0 +1,37 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.7"
+      - name: Install Python
+        run: uv python install 3.13
+      - name: Sync from uv.lock
+        run: uv sync
+      - name: Ruff lint
+        run: uv run ruff check .
+      - name: Ruff format
+        run: uv run ruff format --check .
+      - name: Pyright strict
+        run: uv run pyright
+      - name: Pytest and coverage
+        run: uv run pytest -q --cov=findex --cov-report=term-missing
+      - name: Build wheel
+        run: uv build
+      - name: Install wheel and smoke test
+        run: |
+          wheel=$(find dist -name '*.whl' -print -quit)
+          uv tool run --from "$wheel" findex --help
