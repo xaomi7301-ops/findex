@@ -32,7 +32,7 @@ class CorpusStats:
     def top_terms(self, count: int = 50) -> list[tuple[str, int]]:
         return sorted(self.counts.items(), key=lambda item: (-item[1], item[0]))[:count]
 
-    def as_dict(self) -> dict:
+    def as_dict(self) -> dict[str, object]:
         return {
             "mode": self.mode,
             "documents": self.documents,
