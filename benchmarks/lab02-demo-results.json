@@ -1,0 +1,86 @@
+{
+  "corpus": "data/demo_it",
+  "repetitions": 50,
+  "source_environment": "Linux CPython 3.13.5, synthetic demo documents in development workspace. Not Windows Python docs measurements.",
+  "storage": [
+    {
+      "storage": "plain",
+      "documents": 1000,
+      "tokens": 216619,
+      "vocabulary": 1384,
+      "build_s": 2.102632,
+      "build_peak_mib": 5.361,
+      "format": "pickle",
+      "file_bytes": 1111382,
+      "save_s": 0.063631,
+      "load_s": 0.0556
+    },
+    {
+      "storage": "slots",
+      "documents": 1000,
+      "tokens": 216619,
+      "vocabulary": 1384,
+      "build_s": 1.84177,
+      "build_peak_mib": 3.617,
+      "format": "pickle",
+      "file_bytes": 835585,
+      "save_s": 0.075395,
+      "load_s": 0.063374
+    },
+    {
+      "storage": "array",
+      "documents": 1000,
+      "tokens": 216619,
+      "vocabulary": 1384,
+      "build_s": 1.834706,
+      "build_peak_mib": 1.11,
+      "format": "pickle",
+      "file_bytes": 498456,
+      "save_s": 0.004325,
+      "load_s": 0.002115
+    }
+  ],
+  "formats": [
+    {
+      "format": "pickle",
+      "file_bytes": 835585,
+      "save_s": 0.072761,
+      "load_s": 0.062496
+    },
+    {
+      "format": "json",
+      "file_bytes": 624423,
+      "save_s": 0.088815,
+      "load_s": 0.126281
+    }
+  ],
+  "queries": [
+    {
+      "query": "1 2",
+      "merge": {
+        "median_us": 138.339,
+        "result_count": 1000
+      },
+      "set": {
+        "median_us": 67.249,
+        "result_count": 1000
+      }
+    },
+    {
+      "query": "00001 00002",
+      "merge": {
+        "median_us": 8.097,
+        "result_count": 0
+      },
+      "set": {
+        "median_us": 7.801,
+        "result_count": 0
+      }
+    }
+  ],
+  "positions": {
+    "without_positions_bytes": 835585,
+    "with_positions_bytes": 1349011,
+    "ratio": 1.614
+  }
+}
