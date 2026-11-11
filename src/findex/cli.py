@@ -19,7 +19,8 @@ from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from findex.index import PostingList, build_index
+from findex.index import PostingList
+from findex.parallel import build_parallel_index
 from findex.object_model import open_index
 from findex.ranking import BM25, Scorer, TfIdf, ranked_search
 from findex.store import load, save
@@ -35,6 +36,14 @@ class ScorerChoice(StrEnum):
 
     bm25 = "bm25"
     tfidf = "tfidf"
+
+
+class ExecutorChoice(StrEnum):
+    """Execution strategies for deterministic map/reduce indexing."""
+
+    serial = "serial"
+    threads = "threads"
+    processes = "processes"
 
 
 def _fail(exc: Exception) -> NoReturn:
@@ -64,8 +73,10 @@ def index_command(
     out: Annotated[Path, typer.Option("--out", help="Pickle or .json index.")] = Path("index.bin"),
     positions: Annotated[bool, typer.Option("--positions")] = False,
     limit: Annotated[int | None, typer.Option("--limit", min=0)] = None,
+    workers: Annotated[int, typer.Option("--workers", min=1)] = 1,
+    executor: Annotated[ExecutorChoice, typer.Option("--executor")] = ExecutorChoice.serial,
 ) -> None:
-    """Build and save an index with a Rich progress indicator."""
+    """Build and save with serial, threads or spawned processes and Rich progress."""
     try:
         with Progress(
             SpinnerColumn(),
@@ -80,18 +91,21 @@ def index_command(
             def report_count(count: int) -> None:
                 progress.update(task, completed=count)
 
-            result = build_index(
+            built = build_parallel_index(
                 corpus,
+                executor=executor.value,
+                workers=workers,
                 with_positions=positions,
-                storage="slots",
                 limit=limit,
                 on_document=report_count,
             )
-        save(result, out)
+        save(built.index, out)
         typer.echo(
-            f"Indexed {result.document_count:,} documents, "
-            f"{result.token_count:,} tokens, {result.vocabulary_size:,} terms; "
-            f"saved {out} ({out.stat().st_size:,} bytes)."
+            f"Indexed {built.index.document_count:,} documents, "
+            f"{built.index.token_count:,} tokens, {built.index.vocabulary_size:,} terms; "
+            f"saved {out} ({out.stat().st_size:,} bytes). "
+            f"Executor={executor.value}, workers={workers}, "
+            f"merge={built.merge_seconds:.3f}s."
         )
     except (OSError, ValueError, EOFError) as exc:
         _fail(exc)
