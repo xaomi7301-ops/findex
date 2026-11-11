@@ -23,3 +23,23 @@ Lint: All checks passed! (uv run ruff check .)
 
 Note: tracemalloc peak refers to tracked Python allocations, not total RSS.
 Timing varies across runs and machines. The generated data/ corpus is gitignored.
+
+
+OFFICIAL PYTHON DOCUMENTATION CORPUS — Windows measurement, 2026-11-11
+Python: 3.13.18
+Command: uv run python -m findex.stats data/python_docs --compare
+Corpus: 514 genuine .txt documents, official Python 3.13 documentation archive
+Source: https://docs.python.org/3.13/archives/python-3.13-docs-text.zip
+Documents:        514
+Tokens:            1,921,193
+Vocabulary:        41,255
+
+| Version | Documents | Peak memory (MiB) | Elapsed (s) |
+|---|---:|---:|---:|
+| eager | 514 | 125.631 | 7.418 |
+| lazy | 514 | 33.369 | 14.917 |
+
+Top five tokens: the 102839, a 43476, to 39930, is 34605, in 33735.
+Results verified: counts and full vocabulary are identical.
+Memory reduction: approximately 3.76x.
+The corpus resides in ignored data/python_docs and is not committed.
