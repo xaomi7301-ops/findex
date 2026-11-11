@@ -9,7 +9,6 @@ from array import array
 from collections import Counter, defaultdict
 from dataclasses import dataclass
 from pathlib import Path
-from typing import TypeAlias
 
 from findex.corpus import iter_documents
 from findex.tokenize import tokenize
@@ -41,7 +40,7 @@ class DocMeta:
     title: str
 
 
-PostingList: TypeAlias = list[Posting] | list[PlainPosting] | array
+type PostingList = list[Posting] | list[PlainPosting] | array
 
 
 @dataclass(slots=True)
@@ -169,7 +168,9 @@ def main() -> None:
     print(f"Storage: {index.storage}; positions: {index.with_positions}")
     print(f"Build: {build_seconds:.3f} s; save: {save_seconds:.3f} s")
     print(f"Saved: {args.out} ({args.out.stat().st_size:,} bytes)")
-    print(f"Peak Python memory (build + save): {peak / (1024 * 1024):.3f} MiB")
+    print(
+        f"Peak Python memory (build + save): {peak / (1024 * 1024):.3f} MiB"
+    )
 
 
 if __name__ == "__main__":
