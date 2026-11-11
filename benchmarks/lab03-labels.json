@@ -1,0 +1,80 @@
+{
+  "description": "Ten manually selected topics and relevant Python 3.13 documentation file paths. Review expected labels against the local downloaded text files before treating P@5 as a final human relevance evaluation.",
+  "corpus": "Official Python 3.13 text documentation downloaded by scripts/download_python_docs.py",
+  "queries": [
+    {
+      "query": "asyncio tasks",
+      "relevant_paths": [
+        "library/asyncio-task.txt",
+        "library/asyncio-eventloop.txt"
+      ],
+      "reason": "Asyncio task scheduling and event loop reference"
+    },
+    {
+      "query": "regular expression",
+      "relevant_paths": [
+        "library/re.txt",
+        "howto/regex.txt"
+      ],
+      "reason": "Regular expression API and practical how-to"
+    },
+    {
+      "query": "json encoder",
+      "relevant_paths": [
+        "library/json.txt"
+      ],
+      "reason": "JSON encoder and decoder reference"
+    },
+    {
+      "query": "pickle serialization",
+      "relevant_paths": [
+        "library/pickle.txt"
+      ],
+      "reason": "Python object serialization reference"
+    },
+    {
+      "query": "pathlib paths",
+      "relevant_paths": [
+        "library/pathlib.txt",
+        "library/os.path.txt"
+      ],
+      "reason": "Filesystem path representations and operations"
+    },
+    {
+      "query": "functools cache",
+      "relevant_paths": [
+        "library/functools.txt"
+      ],
+      "reason": "Function caching and functools API"
+    },
+    {
+      "query": "threading lock",
+      "relevant_paths": [
+        "library/threading.txt"
+      ],
+      "reason": "Thread locks and synchronization"
+    },
+    {
+      "query": "unittest mock",
+      "relevant_paths": [
+        "library/unittest.txt",
+        "library/unittest.mock.txt"
+      ],
+      "reason": "Unit testing and mocking API"
+    },
+    {
+      "query": "typing protocol",
+      "relevant_paths": [
+        "library/typing.txt"
+      ],
+      "reason": "Type hints and protocols"
+    },
+    {
+      "query": "collections counter",
+      "relevant_paths": [
+        "library/collections.txt"
+      ],
+      "reason": "Counter and collections reference"
+    }
+  ]
+}
