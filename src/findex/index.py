@@ -8,10 +8,10 @@ import tracemalloc
 from array import array
 from collections import Counter, defaultdict
 from collections.abc import Callable, Iterator
-from itertools import islice
-from typing import Literal
 from dataclasses import dataclass
+from itertools import islice
 from pathlib import Path
+from typing import Literal
 
 from findex.corpus import Document, iter_documents
 from findex.tokenize import tokenize
