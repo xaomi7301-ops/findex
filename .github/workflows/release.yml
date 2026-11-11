@@ -1,0 +1,41 @@
+name: Release wheel
+
+on:
+  push:
+    tags:
+      - "v0.4.0"
+
+permissions:
+  contents: write
+
+jobs:
+  build-and-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          version: "0.13.7"
+      - name: Install Python and dependencies
+        run: |
+          uv python install 3.13
+          uv sync
+      - name: Verify code
+        run: |
+          uv run ruff check .
+          uv run ruff format --check .
+          uv run pyright
+          uv run pytest -q
+      - name: Build distributions
+        run: uv build
+      - name: Verify wheel in clean tool environment
+        run: |
+          wheel=$(find dist -name '*.whl' -print -quit)
+          uv tool run --from "$wheel" findex --help
+      - name: Publish GitHub release with wheel
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create "$GITHUB_REF_NAME" dist/*.whl dist/*.tar.gz \
+            --title "findex v0.4.0" \
+            --notes "Lab 04: strict typing, Typer CLI, Rich output, Hypothesis tests and packaging."
