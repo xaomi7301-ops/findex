@@ -612,7 +612,7 @@ uv --% run findex search index-lab04.bin "python AND (async OR await) NOT java \
 | `pytest --cov=findex --cov-report=term-missing` | **65% загальне покриття** |
 | `uv build` | Створено `findex-0.4.0-py3-none-any.whl` та sdist |
 | `uv tool run --from <wheel> findex --help` | Успішно, усі підкоманди видно |
-| Ruff `format --check .` | **Потрібно відформатувати 13 файлів** |
+| Ruff `format --check .` | **Успішно після завершення лабораторної №4** |
 
 **Покриття 65%** (1173 операторів, 415 непокритих) виміряно в
 GitHub Actions. Високе покриття отримали `cli.py` (92%),
@@ -626,8 +626,8 @@ GitHub Actions. Високе покриття отримали `cli.py` (92%),
 Основні тести зосереджено на типовому CLI, індексі, парсері,
 ранжуванні та серіалізації.
 
-До здачі потрібно виконати `uv run ruff format .`, закомітити
-`uv.lock` і відформатовані файли, після чого перевірити зелений CI.
+Після форматування та фіксації uv.lock перевірки CI лабораторної №4
+успішно пройдено; реліз v0.4.0 містить wheel.
 
 ### Пакування та випуск релізу
 
@@ -644,3 +644,134 @@ findex --help
 та встановлення wheel не перевірено.
 
 Матеріал для захисту: [LAB04_DEFENSE.md](LAB04_DEFENSE.md).
+
+
+---
+
+## Лабораторна №5 — конкурентність, GIL та паралельна індексація
+
+Продовження **того самого findex** на корпусі Python 3.13
+(у попередніх лабораторних — 514 документів, 1 921 193 токени).
+Попередні теги lab-01…lab-04 та реліз v0.4.0 залишаються незмінними.
+Для поточної розробки встановлено версію пакета 0.5.0.
+
+### Алгоритм (M1–M2)
+
+Модуль **src/findex/parallel.py** розділяє індексацію на:
+
+- **build_partial** — picklable функція *рівня модуля*. Завданню
+  передаються лише шляхи файлів, їхні відносні назви, числові
+  doc_id і прапорець позицій. Тексти читає сам воркер.
+  Кожен воркер використовує лише свої Counter, словники та постінги.
+- **merge** — з'єднує часткові словники, перевіряє унікальність
+  doc_id, впорядковує постінги; видаляє проміжки ID після
+  пропущених нечитабельних файлів для відповідності лабораторній №4.
+  Сортування частин за вихідними ID робить результат детермінованим.
+- **build_parallel_index** — один алгоритм, три бекенди:
+  звичайний цикл, ThreadPoolExecutor і ProcessPoolExecutor
+  з явно заданим **spawn**. Процесному воркеру нічого не потрібно
+  імпортувати з __main__, тому він працює на Windows. Виняток
+  воркера піднімається з оригінальним traceback.
+
+Команда **findex index** має нові параметри:
+**--workers N** та **--executor serial|threads|processes**.
+Поточний типовий режим — serial: змінювати його на processes
+слід лише *якщо він справді переможе у вимірюваннях на цьому ПК*.
+
+### Команди для Windows / VS Code
+
+Оновити версію та встановити залежності (psutil і matplotlib):
+
+~~~powershell
+git pull --ff-only origin main
+uv lock
+uv sync
+uv run pyright
+uv run ruff check .
+uv run pytest -q
+~~~
+
+Побудова одного й того самого індексу всіма методами:
+
+~~~powershell
+uv run findex index data/python_docs --out index-lab05-serial.bin --workers 1 --executor serial
+uv run findex index data/python_docs --out index-lab05-threads.bin --workers 4 --executor threads
+uv run findex index data/python_docs --out index-lab05-processes.bin --workers 4 --executor processes
+uv run findex search index-lab05-processes.bin "python OR asyncio" --k 5
+~~~
+
+У тестах **tests/test_lab05.py** порівнюються і вміст, і pickle-байти
+індексів, створених послідовно, у потоках та процесах; окремо
+перевіряються позиції токенів, сортування постінгів, пропущені
+файли, унікальність ID, spawn і CLI.
+
+### Бенчмарк (M3) — лише справжні числа
+
+Модуль **src/findex/lab05_benchmark.py** вимірює конфігурації з
+1, 2, 4, 8 і **os.cpu_count()** воркерами. Для serial достатньо
+1 воркера, для threads/processes запускаються всі зазначені.
+Кожна конфігурація повторюється **тричі**; у таблицю йдуть медіани.
+Є окремий прогрів для кожного executor.
+
+~~~powershell
+uv run python -m findex.lab05_benchmark run data/python_docs --repeats 3 --workers 1,2,4,8,all --executors serial,threads,processes --out benchmarks/lab05-results.json
+~~~
+
+Записуються: wall time, сумарний CPU time (із застереженням щодо
+серіалізації процесів), пікова RSS батьківського процесу,
+час merge і speedup відносно serial=1 для **тієї самої збірки Python**.
+
+**Модель процесора / логічні ядра:** будуть автоматично визначені
+й збережені в JSON під час запуску на Windows. Значення з іншого
+комп'ютера не підставляються.
+
+| Executor | Workers | Wall, с (медіана) | CPU, с | Parent peak RSS, MiB | Merge, с | Speedup |
+|---|---:|---:|---:|---:|---:|---:|
+| serial | 1 | — | — | — | — | 1.0× |
+| threads | 1, 2, 4, 8, all | — | — | — | — | — |
+| processes | 1, 2, 4, 8, all | — | — | — | — | — |
+
+Таблицю буде заповнено лише після вимірювань.
+PNG-графік з ідеальною лінією створюється так:
+
+~~~powershell
+uv run python -m findex.lab05_benchmark plot benchmarks/lab05-results.json --out benchmarks/lab05-speedup.png
+~~~
+
+Після створення файлу **benchmarks/lab05-speedup.png** його буде
+додано у README разом із реальною таблицею.
+
+### Free-threaded CPython 3.13t (M4)
+
+~~~powershell
+uv python install 3.13t
+uv run --python 3.13t python -m findex.lab05_benchmark run data/python_docs --executors serial,threads --workers 1,2,4,8,all --repeats 3 --append --out benchmarks/lab05-results.json
+~~~
+
+Скрипт друкує **sys._is_gil_enabled(): False/True**. Рядки
+позначаються як GIL-off **лише коли значення справді False**;
+якщо True, потрібно перевірити, чи стороння бібліотека не
+ввімкнула GIL. Для 3.13t потрібен *окремий serial baseline*,
+оскільки ця збірка має іншу швидкість навіть на одному потоці.
+
+Потім ще раз сформувати PNG командою plot.
+
+### Пояснення результатів
+
+Окрема сторінка **[LAB05_GIL.md](LAB05_GIL.md)** розглядає, чому
+потоки зі звичайним GIL можуть програвати, як процеси
+паралелять CPU-bound роботу, чим вони платять за IPC/pickle,
+чому CPU time відрізняється від wall time, де межа
+закону Амдала та що змінюється в 3.13t. Воркери не ділять
+мутабельні Counter — це навмисне усунення гонки.
+
+**Обмеження замірів:** RSS — тільки батьківський процес;
+CPU воркерів охоплює їхню функцію build_partial, але не обов'язково
+весь CPU запуску/серіалізації процесу; wall time включає IPC і merge,
+але не запис зібраного індексу на диск. Висновки робимо за
+вимірюваннями, а не за очікуваним виграшем.
+
+**Здача:** той самий публічний GitHub-репозиторій з тегом **lab-05**,
+таблиця медіан, PNG-графік і пояснення GIL у README/LAB05_GIL.md.
+Тег створюється **після** перевірок та завантаження реальних
+результатів. Для захисту: [LAB05_DEFENSE.md](LAB05_DEFENSE.md).
