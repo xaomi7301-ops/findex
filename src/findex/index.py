@@ -141,7 +141,9 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=Path("index.bin"))
     parser.add_argument("--format", choices=("auto", "pickle", "json"), default="auto")
     parser.add_argument("--storage", choices=("plain", "slots", "array"), default="slots")
-    parser.add_argument("--positions", action="store_true", help="Store token positions per posting")
+    parser.add_argument(
+        "--positions", action="store_true", help="Store token positions per posting"
+    )
     args = parser.parse_args()
 
     from findex.index import build_index as canonical_build_index
