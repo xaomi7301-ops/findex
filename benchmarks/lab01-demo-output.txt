@@ -1,16 +1,25 @@
+Windows measurement — 2026-11-11
+Python: 3.13.18
+uv: 0.13.7
+Command: uv run python -m findex.stats data/demo_it --compare
+Corpus: 1000 reproducible synthetic Ukrainian IT notes, generated locally
+  with uv run python scripts/create_demo_corpus.py --count 1000
+
 Mode:              lazy
 Documents:         1,000
-Tokens:            216,619
-Vocabulary:        1,384
-Elapsed:           2.030 s
-Peak tracemalloc:  0.379 MiB
+Tokens:            203,135
+Vocabulary:        1,131
+Elapsed:           7.811 s
+Peak tracemalloc:  0.442 MiB
 
 | Version | Documents | Peak memory (MiB) | Elapsed (s) |
 |---|---:|---:|---:|
-| eager | 1000 | 18.788 | 1.782 |
-| lazy | 1000 | 0.379 | 2.030 |
+| eager | 1000 | 18.149 | 1.895 |
+| lazy | 1000 | 0.442 | 7.811 |
 
 Results verified: counts and full vocabulary are identical.
-Note: These measurements were made with the original demo corpus distributed in the ZIP,
-not the compact synthetic generator in this online repository. Regenerate and benchmark locally
-to collect fresh numbers before changing the benchmark table.
+Tests: 17 passed (uv run pytest -q)
+Lint: All checks passed! (uv run ruff check .)
+
+Note: tracemalloc peak refers to tracked Python allocations, not total RSS.
+Timing varies across runs and machines. The generated data/ corpus is gitignored.
