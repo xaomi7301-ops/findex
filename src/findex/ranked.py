@@ -2,7 +2,8 @@
 
 Examples:
   python -m findex.ranked build data/python_docs --out index-lab03.bin
-  python -m findex.ranked search index-lab03.bin 'python AND (async OR await)' --corpus data/python_docs
+  python -m findex.ranked search index-lab03.bin 'python AND (async OR await)'
+      --corpus data/python_docs
   python -m findex.ranked sanity index-lab03.bin --corpus data/python_docs
   python -m findex.ranked evaluate index-lab03.bin --corpus data/python_docs
 """
