@@ -40,9 +40,7 @@ def main() -> None:
             command.add_argument(
                 "--labels", type=Path, default=Path("benchmarks/lab03-labels.json")
             )
-            command.add_argument(
-                "--out", type=Path, default=Path("benchmarks/lab03-results.json")
-            )
+            command.add_argument("--out", type=Path, default=Path("benchmarks/lab03-results.json"))
     args = parser.parse_args()
     logging.basicConfig(level=logging.INFO, format="%(levelname)s %(message)s")
 

@@ -186,9 +186,7 @@ def main() -> None:
     print(f"Storage: {index.storage}; positions: {index.with_positions}")
     print(f"Build: {build_seconds:.3f} s; save: {save_seconds:.3f} s")
     print(f"Saved: {args.out} ({args.out.stat().st_size:,} bytes)")
-    print(
-        f"Peak Python memory (build + save): {peak / (1024 * 1024):.3f} MiB"
-    )
+    print(f"Peak Python memory (build + save): {peak / (1024 * 1024):.3f} MiB")
 
 
 if __name__ == "__main__":

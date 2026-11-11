@@ -37,8 +37,9 @@ def save(index: InvertedIndex, path: Path, *, format: str = "auto") -> None:
     postings = {}
     for term, entries in index.postings.items():
         if isinstance(entries, array):
-            postings[term] = [[int(entries[i]), int(entries[i + 1]), []]
-                              for i in range(0, len(entries), 2)]
+            postings[term] = [
+                [int(entries[i]), int(entries[i + 1]), []] for i in range(0, len(entries), 2)
+            ]
         else:
             postings[term] = [[p.doc_id, p.tf, list(p.positions)] for p in entries]
 
@@ -75,8 +76,10 @@ def load(path: Path, *, format: str = "auto") -> InvertedIndex:
         raise ValueError("Unsupported JSON index version")
     return InvertedIndex(
         postings={
-            term: [Posting(int(doc_id), int(tf), tuple(map(int, positions)))
-                   for doc_id, tf, positions in entries]
+            term: [
+                Posting(int(doc_id), int(tf), tuple(map(int, positions)))
+                for doc_id, tf, positions in entries
+            ]
             for term, entries in data["postings"].items()
         },
         doc_lengths={int(k): int(v) for k, v in data["doc_lengths"].items()},

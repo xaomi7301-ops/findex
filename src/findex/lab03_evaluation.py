@@ -39,7 +39,8 @@ def print_sanity(index: Index) -> None:
     bm25 = BM25()
     rare = next(
         (
-            term for term in ("frozenset", "weakref", "asynciogenerator", "metaclass")
+            term
+            for term in ("frozenset", "weakref", "asynciogenerator", "metaclass")
             if 0 < index.df(term) < index.num_docs // 3
         ),
         None,

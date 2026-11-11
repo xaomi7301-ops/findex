@@ -134,7 +134,7 @@ def _lex(source: str) -> list[Expr | str]:
     tokens: list[Expr | str] = []
     end = 0
     for match in TOKEN_PATTERN.finditer(source):
-        if source[end:match.start()].strip():
+        if source[end : match.start()].strip():
             raise ValueError("Malformed query: unexpected character or unmatched quote")
         word = match.group()
         if word in {"(", ")"}:

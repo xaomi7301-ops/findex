@@ -61,9 +61,7 @@ def _configure(
 @app.command("index")
 def index_command(
     corpus: Annotated[Path, typer.Argument(help="Directory with UTF-8 .txt files.")],
-    out: Annotated[Path, typer.Option("--out", help="Pickle or .json index.")] = Path(
-        "index.bin"
-    ),
+    out: Annotated[Path, typer.Option("--out", help="Pickle or .json index.")] = Path("index.bin"),
     positions: Annotated[bool, typer.Option("--positions")] = False,
     limit: Annotated[int | None, typer.Option("--limit", min=0)] = None,
 ) -> None:
@@ -83,8 +81,11 @@ def index_command(
                 progress.update(task, completed=count)
 
             result = build_index(
-                corpus, with_positions=positions, storage="slots",
-                limit=limit, on_document=report_count,
+                corpus,
+                with_positions=positions,
+                storage="slots",
+                limit=limit,
+                on_document=report_count,
             )
         save(result, out)
         typer.echo(
@@ -126,8 +127,10 @@ def search_command(
                     "]]", "[/bold yellow]"
                 )
                 table.add_row(
-                    str(position), f"{result.score:.4f}",
-                    f"{result.title}\n[dim]{result.path}[/dim]", highlighted,
+                    str(position),
+                    f"{result.score:.4f}",
+                    f"{result.title}\n[dim]{result.path}[/dim]",
+                    highlighted,
                 )
             console.print(table)
             console.print(f"Found {len(results)} ranked result(s).")

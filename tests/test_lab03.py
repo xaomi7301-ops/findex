@@ -83,9 +83,7 @@ def test_context_manager_closes_even_on_exception(corpus, tmp_path):
 
 def test_tree_equality_and_operators():
     assert parse("a OR b c") == Or(Term("a"), And(Term("b"), Term("c")))
-    assert Term("a") & (Term("b") | ~Term("c")) == And(
-        Term("a"), Or(Term("b"), Not(Term("c")))
-    )
+    assert Term("a") & (Term("b") | ~Term("c")) == And(Term("a"), Or(Term("b"), Not(Term("c"))))
     with pytest.raises(FrozenInstanceError):
         node = Term("hello")
         node.value = "other"
@@ -108,8 +106,7 @@ def test_complex_query_tree_and_results(index):
 def test_phrase_contiguous_repetition_and_negative(index):
     assert len(Phrase(("event", "loop")).evaluate(index)) == 4
     assert not Phrase(("loop", "event")).evaluate(index)
-    alpha_id = next(doc_id for doc_id, meta in index.doc_meta.items()
-                    if meta.path == "alpha.txt")
+    alpha_id = next(doc_id for doc_id, meta in index.doc_meta.items() if meta.path == "alpha.txt")
     assert Phrase(("python", "python")).evaluate(index) == {alpha_id}
     assert parse('"event loop"').evaluate(index) == set(index.doc_meta)
 
@@ -161,8 +158,10 @@ def test_rarity_is_worth_more(index):
 def test_bm25_saturation(index):
     scorer = BM25()
     doc_id = next(iter(parse("java").evaluate(index)))
+
     def score(tf):
         return scorer.score("java", Posting(doc_id, tf), index)
+
     assert score(20) - score(19) < score(2) - score(1)
 
 
@@ -182,8 +181,7 @@ def test_snippet_highlights_and_cache_hit(index, caplog):
         second = ranked_search(index, "python OR java", scorer=BM25(), k=3)
     assert first == second
     assert any("[[" in result.snippet for result in first)
-    alpha_id = next(doc_id for doc_id, meta in index.doc_meta.items()
-                    if meta.path == "alpha.txt")
+    alpha_id = next(doc_id for doc_id, meta in index.doc_meta.items() if meta.path == "alpha.txt")
     assert "[[python]]" in snippet_for(index, alpha_id, ("python",))
     assert "query-cache MISS" in caplog.text
     assert "query-cache HIT" in caplog.text
@@ -215,20 +213,38 @@ def test_command_line_build_and_search(corpus, tmp_path):
     output = tmp_path / "lab03.bin"
     built = subprocess.run(
         [
-            sys.executable, "-m", "findex.ranked", "build",
-            str(corpus), "--out", str(output),
+            sys.executable,
+            "-m",
+            "findex.ranked",
+            "build",
+            str(corpus),
+            "--out",
+            str(output),
         ],
-        check=True, text=True, capture_output=True, env=env,
+        check=True,
+        text=True,
+        capture_output=True,
+        env=env,
     )
     assert output.exists()
     assert "Positions enabled: True" in built.stdout
     searched = subprocess.run(
         [
-            sys.executable, "-m", "findex.ranked", "search",
-            str(output), '"event loop" AND python',
-            "--corpus", str(corpus), "--repeat", "2",
+            sys.executable,
+            "-m",
+            "findex.ranked",
+            "search",
+            str(output),
+            '"event loop" AND python',
+            "--corpus",
+            str(corpus),
+            "--repeat",
+            "2",
         ],
-        check=True, text=True, capture_output=True, env=env,
+        check=True,
+        text=True,
+        capture_output=True,
+        env=env,
     )
     assert "ranked results" in searched.stdout
     assert "[[" in searched.stdout

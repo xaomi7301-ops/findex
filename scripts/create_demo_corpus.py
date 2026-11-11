@@ -40,9 +40,7 @@ def main() -> None:
         for part in range(12):
             text.append(f"Частина {part + 1}: {description}")
             text.append("Рекомендації: перевірка налаштувань, журналів та документації.")
-        (args.root / f"note_{i + 1:05d}.txt").write_text(
-            "\n".join(text) + "\n", encoding="utf-8"
-        )
+        (args.root / f"note_{i + 1:05d}.txt").write_text("\n".join(text) + "\n", encoding="utf-8")
     print(f"Generated {args.count} synthetic IT documents in {args.root}")
 
 

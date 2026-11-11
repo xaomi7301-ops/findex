@@ -55,9 +55,7 @@ class BM25:
         idf = math.log1p((n - df + 0.5) / (df + 0.5))
         avg_length = index.avg_doc_length or 1.0
         normalization = 1.0 - self.b + self.b * index.doc_length(posting.doc_id) / avg_length
-        return idf * (posting.tf * (self.k1 + 1)) / (
-            posting.tf + self.k1 * normalization
-        )
+        return idf * (posting.tf * (self.k1 + 1)) / (posting.tf + self.k1 * normalization)
 
     def __call__(self, term: str, posting: Posting | PlainPosting, index: Index) -> float:
         return self.score(term, posting, index)
@@ -144,8 +142,9 @@ def ranked_search(
         from array import array
 
         if isinstance(postings, array):
-            pairs = (Posting(int(postings[i]), int(postings[i + 1]))
-                     for i in range(0, len(postings), 2))
+            pairs = (
+                Posting(int(postings[i]), int(postings[i + 1])) for i in range(0, len(postings), 2)
+            )
         else:
             pairs = iter(postings)
         for posting in pairs:

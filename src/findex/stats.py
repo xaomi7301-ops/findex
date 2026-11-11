@@ -106,9 +106,7 @@ def print_stats(stats: CorpusStats) -> None:
 
 
 def print_comparison(lazy: CorpusStats, eager: CorpusStats) -> None:
-    if (lazy.documents, lazy.tokens, lazy.counts) != (
-        eager.documents, eager.tokens, eager.counts
-    ):
+    if (lazy.documents, lazy.tokens, lazy.counts) != (eager.documents, eager.tokens, eager.counts):
         raise AssertionError("The lazy and eager versions produced different statistics!")
     print("\n| Version | Documents | Peak memory (MiB) | Elapsed (s) |")
     print("|---|---:|---:|---:|")

@@ -143,11 +143,17 @@ def test_cli_end_to_end(corpus, tmp_path):
     saved = tmp_path / "index.bin"
     build = subprocess.run(
         [sys.executable, "-m", "findex.index", str(corpus), "--out", str(saved)],
-        capture_output=True, text=True, env=environment, check=True,
+        capture_output=True,
+        text=True,
+        env=environment,
+        check=True,
     )
     assert "Documents: 4" in build.stdout
     lookup = subprocess.run(
         [sys.executable, "-m", "findex.search", str(saved), "python OR rust", "--engine", "set"],
-        capture_output=True, text=True, env=environment, check=True,
+        capture_output=True,
+        text=True,
+        env=environment,
+        check=True,
     )
     assert "Found 3 document(s)" in lookup.stdout
