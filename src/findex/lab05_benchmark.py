@@ -152,9 +152,7 @@ def summarise(samples: Sequence[Sample]) -> list[Summary]:
     """Compute independent medians and speedups relative to same-runtime serial."""
     grouped: dict[tuple[str, ExecutorKind, int], list[Sample]] = {}
     for sample in samples:
-        grouped.setdefault((sample.variant, sample.executor, sample.workers), []).append(
-            sample
-        )
+        grouped.setdefault((sample.variant, sample.executor, sample.workers), []).append(sample)
     baselines: dict[str, float] = {
         variant: statistics.median(s.wall_s for s in records)
         for (variant, executor, workers), records in grouped.items()
@@ -221,11 +219,8 @@ def benchmark(
     corpus = corpus.resolve()
     paths = document_paths(corpus)
     state = gil_enabled()
-    variant = (
-        "GIL-off"
-        if state is False
-        else "GIL-on" if state is True else "GIL-status-unavailable"
-    )
+    gil_label = "GIL-off" if state is False else "GIL-on" if state is True else "unknown"
+    variant = f"cpython-{sys.version_info.minor}{sys.abiflags}-{gil_label}"
     machine = {
         "cpu_model": cpu_model(),
         "logical_cores": os.cpu_count(),
@@ -337,8 +332,7 @@ class _PlotAxes(Protocol):
     """Small typed interface for Matplotlib's partially typed dynamic Axes API."""
 
     def plot(
-        self, x: Sequence[int | float], y: Sequence[int | float],
-        *args: str, **kwargs: object
+        self, x: Sequence[int | float], y: Sequence[int | float], *args: str, **kwargs: object
     ) -> object: ...
 
     def set_xlabel(self, label: str) -> object: ...
