@@ -81,13 +81,12 @@ def index_command(
     try:
         # Ryzen 5 7430U measurements: processes x8 was fastest (1.30x).
         # Respect explicit --workers and keep serial restricted to one worker.
-        selected_workers = (
-            workers
-            if workers is not None
-            else 1
-            if executor is ExecutorChoice.serial
-            else min(8, os.cpu_count() or 1)
-        )
+        if workers is not None:
+            selected_workers = workers
+        elif executor is ExecutorChoice.serial:
+            selected_workers = 1
+        else:
+            selected_workers = min(8, os.cpu_count() or 1)
         with Progress(
             SpinnerColumn(),
             TextColumn("{task.description}"),
