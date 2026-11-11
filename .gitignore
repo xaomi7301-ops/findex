@@ -1,0 +1,14 @@
+# The corpus is local data and must never be committed.
+data/
+
+.venv/
+__pycache__/
+.pytest_cache/
+.ruff_cache/
+*.py[cod]
+*.egg-info/
+build/
+dist/
+.coverage
+.idea/
+.vscode/
