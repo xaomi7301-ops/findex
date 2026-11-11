@@ -7,6 +7,7 @@ from __future__ import annotations
 
 import json
 import logging
+import os
 import sys
 from array import array
 from dataclasses import asdict
@@ -73,11 +74,20 @@ def index_command(
     out: Annotated[Path, typer.Option("--out", help="Pickle or .json index.")] = Path("index.bin"),
     positions: Annotated[bool, typer.Option("--positions")] = False,
     limit: Annotated[int | None, typer.Option("--limit", min=0)] = None,
-    workers: Annotated[int, typer.Option("--workers", min=1)] = 1,
-    executor: Annotated[ExecutorChoice, typer.Option("--executor")] = ExecutorChoice.serial,
+    workers: Annotated[int | None, typer.Option("--workers", min=1)] = None,
+    executor: Annotated[ExecutorChoice, typer.Option("--executor")] = ExecutorChoice.processes,
 ) -> None:
     """Build and save with serial, threads or spawned processes and Rich progress."""
     try:
+        # Ryzen 5 7430U measurements: processes x8 was fastest (1.30x).
+        # Respect explicit --workers and keep serial restricted to one worker.
+        selected_workers = (
+            workers
+            if workers is not None
+            else 1
+            if executor is ExecutorChoice.serial
+            else min(8, os.cpu_count() or 1)
+        )
         with Progress(
             SpinnerColumn(),
             TextColumn("{task.description}"),
@@ -94,7 +104,7 @@ def index_command(
             built = build_parallel_index(
                 corpus,
                 executor=executor.value,
-                workers=workers,
+                workers=selected_workers,
                 with_positions=positions,
                 limit=limit,
                 on_document=report_count,
@@ -104,7 +114,7 @@ def index_command(
             f"Indexed {built.index.document_count:,} documents, "
             f"{built.index.token_count:,} tokens, {built.index.vocabulary_size:,} terms; "
             f"saved {out} ({out.stat().st_size:,} bytes). "
-            f"Executor={executor.value}, workers={workers}, "
+            f"Executor={executor.value}, workers={selected_workers}, "
             f"merge={built.merge_seconds:.3f}s."
         )
     except (OSError, ValueError, EOFError) as exc:
