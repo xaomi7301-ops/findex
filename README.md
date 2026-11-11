@@ -331,3 +331,175 @@ uv run python -m findex.benchmark data/python_docs --repeats 100 --measure-posit
 
 Для здачі потрібен тег **lab-02**. Конспект запитань Reflection —
 у файлі LAB02_DEFENSE.md.
+
+
+---
+
+## Лабораторна №3 — рейтинг та модель об'єктів
+
+**Корпус:** та сама офіційна документація Python 3.13 із лабораторних
+№1–2. **Мета:** перетворити інвертований індекс на Python-об'єкт,
+підтримати складні Boolean-запити, ранжування, сніпети й оцінювання.
+
+### M1. Модель об'єктів, властивості та контекстний менеджер
+
+У модулі src/findex/object_model.py клас Index є реалізацією
+collections.abc.Mapping. Він **обгортає InvertedIndex лабораторної №2**,
+не ламаючи старі формати pickle/JSON та теги lab-01, lab-02.
+
+- len(ix) — кількість різних термінів;
+- "python" in ix — перевірка наявності терміна;
+- ix["python"] — список постінгів або KeyError;
+- for term in ix — ітерація словником;
+- repr(ix) — кількість термінів і документів;
+- ix.num_docs — @property, ix.avg_doc_length — @cached_property;
+- ix.df(term), ix.doc_length(doc_id) — частота за документами та довжина;
+- with open_index(path, corpus_root=...) as ix — автоматичне закриття
+  й очищення внутрішніх структур та кешу навіть при винятку.
+
+### M2. Протокол Scorer, TF-IDF і BM25
+
+Модуль src/findex/ranking.py визначає typing.Protocol Scorer та дві
+взаємозамінні реалізації TfIdf і BM25(k1=1.5, b=0.75).
+
+TF-IDF: (1 + ln(tf)) · (ln((N+1)/(df+1)) + 1).
+
+BM25: ln(1 + (N-df+0.5)/(df+0.5)) · tf·(k1+1) /
+(tf + k1·(1-b+b·doc_length/avg_doc_length)).
+
+BM25 враховує рідкість терміна, насичення повторень та довжину
+документа. Функція ranked_search спершу перевіряє Boolean-відповідність,
+накопичує бали та обирає top-k через heapq.nlargest.
+SearchResult — @dataclass(frozen=True, order=True) із сортуванням
+за спаданням балу та ID документа.
+
+### M3. Рекурсивний парсер і фрази
+
+У src/findex/query.py є AST-вузли Term, Phrase, And, Or, Not.
+Кожен має evaluate(index) та перевантаження &, |, ~.
+Граматика підтримує дужки, AND, OR, NOT, неявний AND
+між сусідніми словами. Пріоритет: NOT → AND → OR.
+
+Приклад запиту:
+
+~~~text
+python AND (async OR await) NOT java "event loop"
+~~~
+
+Фраза "event loop" перевіряється за послідовними **позиціями токенів**.
+Для неї потрібно **окремо побудувати індекс із позиціями**. Звичайний
+index.bin із лабораторної №2 зберігався без позицій, тому пошук фраз
+у ньому навмисно видає зрозумілу помилку, а не неправильний результат.
+
+Тести порівнюють AST як об'єкти, наприклад
+parse("a OR b c") == Or(Term("a"), And(Term("b"), Term("c"))).
+
+### M4. Замикання, декоратори, кеш, сніпети, precision@5
+
+- @timed із functools.wraps логуватиме час build_ranked_index,
+  load_ranked_index і ranked_search у мілісекундах.
+- @lru_cache(maxsize=256) зберігає шлях «рядок запиту → множина
+  doc_id» **окремо для кожного відкритого індексу**. Повторний запит
+  виводить query-cache HIT, перший — MISS.
+- Сніпети читаються лише для top-k документів із корпусу; вікно
+  приблизно ±80 символів, знайдені слова виділяються як [[term]].
+- У benchmarks/lab03-labels.json наведено **10 вручну визначених
+  тематичних запитів** із очікуваними файлами документації.
+  Скрипт порівнює precision@5 (релевантні в топ-5 / 5) для
+  TF-IDF і BM25. Розмітку слід звірити з локальними документами;
+  скрипт попереджає про відсутні шляхи.
+
+### Запуск у VS Code (PowerShell)
+
+~~~powershell
+git pull --ff-only origin main
+uv sync
+uv run pytest -q
+uv run ruff check .
+~~~
+
+Створити **позиційний** індекс на своєму корпусі:
+
+~~~powershell
+uv run python -m findex.ranked build data/python_docs --out index-lab03.bin
+~~~
+
+Завантажити його, виконати запит із дужками й фразою та показати кеш-hit:
+
+~~~powershell
+uv run python -m findex.ranked search index-lab03.bin 'python AND (async OR await) NOT java "event loop"' --corpus data/python_docs --scorer bm25 --k 5 --repeat 2
+~~~
+
+Порівняти з TF-IDF:
+
+~~~powershell
+uv run python -m findex.ranked search index-lab03.bin 'python OR asyncio' --corpus data/python_docs --scorer tfidf --k 5
+~~~
+
+Перевірити три властивості BM25 на параметрах **цього корпусу**:
+
+~~~powershell
+uv run python -m findex.ranked sanity index-lab03.bin --corpus data/python_docs
+~~~
+
+Зробити **реальне оцінювання 10 запитів**, отримати таблицю P@5 і
+зберегти результати для GitHub:
+
+~~~powershell
+uv run python -m findex.ranked evaluate index-lab03.bin --corpus data/python_docs --labels benchmarks/lab03-labels.json --out benchmarks/lab03-results.json
+~~~
+
+### Три sanity-check ранжування
+
+Тестові умови утримують tf або довжину документа сталою, щоб
+ізолювати конкретний ефект BM25. Частоти термінів і довжини
+беруться з реального індексу; контрольовані значення tf
+(1, 2, 19, 20) — **пояснювальні сценарії**, а не твердження
+про фактичну кількість входжень у вибраному документі.
+
+| Перевірка | Очікування |
+|---|---|
+| Рідкісний термін проти частого при tf=1 | Вищий внесок рідкісного терміна (IDF) |
+| Приріст з tf=19 до tf=20 проти tf=1 до tf=2 | 20-те входження додає значно менше |
+| Короткий проти довгого документа при tf=1 | Вищий BM25-бал короткого |
+
+Значення для свого корпусу виводить команда sanity; вони залежать
+від реальних частот і довжин.
+
+### Оцінка precision@5 (10 ручних запитів)
+
+Це контрольна вибірка тематично релевантних файлів документації;
+остаточні **числові значення** треба внести після запуску evaluate
+на реальному індексі. Без отриманих результатів їх не підставляємо.
+
+| Запит | Релевантний документ (приклад) | TF-IDF P@5 | BM25 P@5 |
+|---|---|---:|---:|
+| asyncio tasks | library/asyncio-task.txt | — | — |
+| regular expression | library/re.txt | — | — |
+| json encoder | library/json.txt | — | — |
+| pickle serialization | library/pickle.txt | — | — |
+| pathlib paths | library/pathlib.txt | — | — |
+| functools cache | library/functools.txt | — | — |
+| threading lock | library/threading.txt | — | — |
+| unittest mock | library/unittest.mock.txt | — | — |
+| typing protocol | library/typing.txt | — | — |
+| collections counter | library/collections.txt | — | — |
+
+Середнє P@5 буде обчислене програмою і записане разом з top-5
+документами в benchmarks/lab03-results.json.
+
+### Опис очікуваного логу @timed / cache
+
+Перший пошук друкує лог query-cache MISS, повторний на тому
+самому об'єкті Index — query-cache HIT. Обидва виклики виводять
+@timed ranked_search із фактично виміряними мілісекундами.
+Також @timed виводить час побудови та відкриття індексу.
+Точні значення часу не фіксовані та залежать від комп'ютера.
+
+**Безпека:** для .bin використовується pickle із лабораторної №2.
+Не завантажуйте недовірені pickle-файли. Власний позиційний файл
+index-lab03.bin зберігається локально і виключений через .gitignore.
+
+**Здача:** той самий публічний GitHub-репозиторій із тегом lab-03;
+після перевірок і внесення реального P@5. Захист — п'ятихвилинне
+демо з with open_index() і питаннями з LAB03_DEFENSE.md.
