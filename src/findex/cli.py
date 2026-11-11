@@ -10,7 +10,7 @@ import logging
 import sys
 from array import array
 from dataclasses import asdict
-from enum import Enum
+from enum import StrEnum
 from pathlib import Path
 from typing import Annotated, NoReturn
 
@@ -30,7 +30,7 @@ console = Console()
 logger = logging.getLogger(__name__)
 
 
-class ScorerChoice(str, Enum):
+class ScorerChoice(StrEnum):
     """Validated ranking modes shown in --help."""
 
     bm25 = "bm25"
