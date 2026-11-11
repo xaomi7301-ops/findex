@@ -17,3 +17,6 @@ dist/
 index.bin
 index.json
 index-with-positions.bin
+
+# Lab 03 generated positional index
+index-lab03.bin
