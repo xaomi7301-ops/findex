@@ -108,7 +108,9 @@ def test_complex_query_tree_and_results(index):
 def test_phrase_contiguous_repetition_and_negative(index):
     assert len(Phrase(("event", "loop")).evaluate(index)) == 4
     assert not Phrase(("loop", "event")).evaluate(index)
-    assert Phrase(("python", "python")).evaluate(index) == {0}
+    alpha_id = next(doc_id for doc_id, meta in index.doc_meta.items()
+                    if meta.path == "alpha.txt")
+    assert Phrase(("python", "python")).evaluate(index) == {alpha_id}
     assert parse('"event loop"').evaluate(index) == set(index.doc_meta)
 
 
@@ -180,7 +182,9 @@ def test_snippet_highlights_and_cache_hit(index, caplog):
         second = ranked_search(index, "python OR java", scorer=BM25(), k=3)
     assert first == second
     assert any("[[" in result.snippet for result in first)
-    assert "[[python]]" in snippet_for(index, 0, ("python",))
+    alpha_id = next(doc_id for doc_id, meta in index.doc_meta.items()
+                    if meta.path == "alpha.txt")
+    assert "[[python]]" in snippet_for(index, alpha_id, ("python",))
     assert "query-cache MISS" in caplog.text
     assert "query-cache HIT" in caplog.text
     assert index.cache_info().hits >= 1
