@@ -48,7 +48,9 @@ def test_cli_help_is_installed_entry_point() -> None:
 
 def test_cli_index_search_and_stats(tiny_corpus: Path, tmp_path: Path) -> None:
     target = tmp_path / "index.bin"
-    built = runner.invoke(app, ["index", str(tiny_corpus), "--out", str(target), "--positions"])
+    built = runner.invoke(
+        app, ["index", str(tiny_corpus), "--out", str(target), "--positions", "--executor", "serial"]
+    )
     assert built.exit_code == 0, built.output
     assert target.is_file()
     assert "4 documents" in built.stdout
@@ -66,7 +68,7 @@ def test_cli_index_search_and_stats(tiny_corpus: Path, tmp_path: Path) -> None:
 
 def test_cli_jsonl_and_stderr(tiny_corpus: Path, tmp_path: Path) -> None:
     target = tmp_path / "index.json"
-    assert runner.invoke(app, ["index", str(tiny_corpus), "--out", str(target)]).exit_code == 0
+    assert runner.invoke(app, ["index", str(tiny_corpus), "--out", str(target), "--executor", "serial"]).exit_code == 0
     result = runner.invoke(app, ["-vv", "search", str(target), "python", "--json", "--k", "2"])
     assert result.exit_code == 0, result.output
     records = [json.loads(line) for line in result.stdout.splitlines()]
@@ -79,7 +81,7 @@ def test_cli_jsonl_and_stderr(tiny_corpus: Path, tmp_path: Path) -> None:
 @pytest.mark.parametrize("query", ["AND", "python OR", "python ("])
 def test_cli_bad_query_has_one_line_error(tmp_path: Path, tiny_corpus: Path, query: str) -> None:
     target = tmp_path / "index.bin"
-    assert runner.invoke(app, ["index", str(tiny_corpus), "--out", str(target)]).exit_code == 0
+    assert runner.invoke(app, ["index", str(tiny_corpus), "--out", str(target), "--executor", "serial"]).exit_code == 0
     result = runner.invoke(app, ["search", str(target), query])
     assert result.exit_code != 0
     assert "Error:" in result.output
@@ -173,7 +175,7 @@ def test_installed_module_as_python_subprocess(tiny_corpus: Path, tmp_path: Path
 
     path = tmp_path / "slow.bin"
     process = subprocess.run(
-        [sys.executable, "-m", "findex.cli", "index", str(tiny_corpus), "--out", str(path)],
+        [sys.executable, "-m", "findex.cli", "index", str(tiny_corpus), "--out", str(path), "--executor", "serial"],
         capture_output=True,
         text=True,
         check=False,
