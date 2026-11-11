@@ -7,10 +7,13 @@ import time
 import tracemalloc
 from array import array
 from collections import Counter, defaultdict
+from collections.abc import Callable, Iterator
+from itertools import islice
+from typing import Literal
 from dataclasses import dataclass
 from pathlib import Path
 
-from findex.corpus import iter_documents
+from findex.corpus import Document, iter_documents
 from findex.tokenize import tokenize
 
 
@@ -40,7 +43,8 @@ class DocMeta:
     title: str
 
 
-type PostingList = list[Posting] | list[PlainPosting] | array
+type PostingList = list[Posting] | list[PlainPosting] | array[int]
+type StorageName = Literal["plain", "slots", "array"]
 
 
 @dataclass(slots=True)
@@ -50,7 +54,7 @@ class InvertedIndex:
     postings: dict[str, PostingList]
     doc_lengths: dict[int, int]
     doc_meta: dict[int, DocMeta]
-    storage: str = "slots"
+    storage: StorageName = "slots"
     with_positions: bool = False
 
     @property
@@ -74,7 +78,12 @@ def posting_doc_ids(postings: PostingList) -> list[int]:
 
 
 def build_index(
-    root: Path, *, storage: str = "slots", with_positions: bool = False
+    root: Path,
+    *,
+    storage: StorageName = "slots",
+    with_positions: bool = False,
+    limit: int | None = None,
+    on_document: Callable[[int], None] | None = None,
 ) -> InvertedIndex:
     """Build from streamed docs, retaining only one document's Counter at a time.
 
@@ -83,20 +92,25 @@ def build_index(
     """
     if storage not in {"plain", "slots", "array"}:
         raise ValueError("storage must be plain, slots or array")
+    if limit is not None and limit < 0:
+        raise ValueError("limit must be nonnegative")
     if with_positions and storage == "array":
         raise ValueError("array storage does not support positions")
 
-    postings: defaultdict[str, PostingList]
+    postings: defaultdict[str, PostingList] = defaultdict(list)
     if storage == "array":
         postings = defaultdict(lambda: array("I"))
-    else:
-        postings = defaultdict(list)
 
     doc_lengths: dict[int, int] = {}
     doc_meta: dict[int, DocMeta] = {}
-    constructor = PlainPosting if storage == "plain" else Posting
+    constructor: type[PlainPosting] | type[Posting] = (
+        PlainPosting if storage == "plain" else Posting
+    )
 
-    for doc_id, document in enumerate(iter_documents(root)):
+    documents: Iterator[Document] = iter_documents(root)
+    if limit is not None:
+        documents = islice(documents, limit)
+    for doc_id, document in enumerate(documents):
         counts: Counter[str] = Counter()
         positions: defaultdict[str, list[int]] | None = (
             defaultdict(list) if with_positions else None
@@ -125,6 +139,8 @@ def build_index(
                 assert isinstance(target, list)
                 term_positions = tuple(positions[term]) if positions is not None else ()
                 target.append(constructor(doc_id, tf, term_positions))
+        if on_document is not None:
+            on_document(doc_id + 1)
 
     return InvertedIndex(
         postings=dict(postings),
