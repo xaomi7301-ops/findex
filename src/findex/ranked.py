@@ -49,7 +49,7 @@ def main() -> None:
     if args.command == "build":
         ix = build_ranked_index(args.corpus, positions=not args.no_positions)
         try:
-            save(ix._raw, args.out)
+            save(ix.raw, args.out)
             print(f"Saved {args.out}: {ix.num_docs} docs, {len(ix)} terms")
             print(f"Positions enabled: {ix.has_positions}")
             print(f"File size: {args.out.stat().st_size:,} bytes")
