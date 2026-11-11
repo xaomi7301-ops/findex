@@ -10,7 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
 
-from findex.index import Posting
+from findex.index import PlainPosting, Posting
 from findex.object_model import Index
 from findex.query import parse
 from findex.timing import timed
@@ -19,20 +19,20 @@ from findex.timing import timed
 class Scorer(Protocol):
     """Duck-typed ranking strategy; no inheritance required."""
 
-    def score(self, term: str, posting: Posting, index: Index) -> float: ...
+    def score(self, term: str, posting: Posting | PlainPosting, index: Index) -> float: ...
 
 
 @dataclass(frozen=True, slots=True)
 class TfIdf:
     """Smoothed IDF and log-scaled frequency (a simple TF-IDF baseline)."""
 
-    def score(self, term: str, posting: Posting, index: Index) -> float:
+    def score(self, term: str, posting: Posting | PlainPosting, index: Index) -> float:
         if posting.tf < 1 or index.num_docs == 0:
             return 0.0
         idf = math.log((index.num_docs + 1) / (index.df(term) + 1)) + 1.0
         return (1.0 + math.log(posting.tf)) * idf
 
-    def __call__(self, term: str, posting: Posting, index: Index) -> float:
+    def __call__(self, term: str, posting: Posting | PlainPosting, index: Index) -> float:
         return self.score(term, posting, index)
 
 
@@ -47,7 +47,7 @@ class BM25:
         if self.k1 <= 0 or not 0 <= self.b <= 1:
             raise ValueError("Expected k1 > 0 and 0 <= b <= 1")
 
-    def score(self, term: str, posting: Posting, index: Index) -> float:
+    def score(self, term: str, posting: Posting | PlainPosting, index: Index) -> float:
         if posting.tf < 1 or index.num_docs == 0:
             return 0.0
         n = index.num_docs
@@ -59,7 +59,7 @@ class BM25:
             posting.tf + self.k1 * normalization
         )
 
-    def __call__(self, term: str, posting: Posting, index: Index) -> float:
+    def __call__(self, term: str, posting: Posting | PlainPosting, index: Index) -> float:
         return self.score(term, posting, index)
 
 
