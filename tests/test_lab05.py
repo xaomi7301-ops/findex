@@ -120,8 +120,8 @@ def test_cli_new_options_and_stored_file(tiny_corpus: Path, tmp_path: Path) -> N
 
 def test_cli_rejects_zero_workers(tiny_corpus: Path) -> None:
     result = runner.invoke(app, ["index", str(tiny_corpus), "--workers", "0"])
-    assert result.exit_code != 0
-    assert "--workers" in result.output
+    assert result.exit_code == 2
+    assert "Traceback" not in result.output
 
 
 def test_partial_receives_paths_not_text(tiny_corpus: Path) -> None:
