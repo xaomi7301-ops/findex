@@ -14,6 +14,7 @@ import os
 import platform
 import statistics
 import sys
+import sysconfig
 import threading
 import time
 from collections.abc import Callable, Sequence
@@ -61,6 +62,12 @@ def gil_enabled() -> bool | None:
     """Read the actual runtime GIL flag; None on builds without this API."""
     check = cast("Callable[[], bool] | None", getattr(sys, "_is_gil_enabled", None))
     return check() if check is not None else None
+
+
+def python_abi() -> str:
+    """Identify the free-threaded Python ABI portably on Windows and Linux."""
+    flag = sysconfig.get_config_var("Py_GIL_DISABLED")
+    return "free-threaded" if str(flag).lower() in {"1", "true"} else "standard"
 
 
 def cpu_model() -> str:
@@ -220,13 +227,14 @@ def benchmark(
     paths = document_paths(corpus)
     state = gil_enabled()
     gil_label = "GIL-off" if state is False else "GIL-on" if state is True else "unknown"
-    variant = f"cpython-{sys.version_info.minor}{sys.abiflags}-{gil_label}"
+    abi = python_abi()
+    variant = f"cpython-{sys.version_info.major}.{sys.version_info.minor}-{abi}-{gil_label}"
     machine = {
         "cpu_model": cpu_model(),
         "logical_cores": os.cpu_count(),
         "physical_cores": psutil.cpu_count(logical=False),
         "python": sys.version.split()[0],
-        "python_abi": sys.abiflags,
+        "python_abi": abi,
         "sys._is_gil_enabled()": state,
         "platform": platform.platform(),
     }
