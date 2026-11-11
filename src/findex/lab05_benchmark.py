@@ -327,6 +327,12 @@ def benchmark(
     return report
 
 
+class _SaveImage(Protocol):
+    """Typed boundary to Matplotlib's incompletely annotated savefig method."""
+
+    def savefig(self, filename: Path, *, dpi: int) -> None: ...
+
+
 class _PlotAxes(Protocol):
     """Small typed interface for Matplotlib's partially typed dynamic Axes API."""
 
@@ -384,9 +390,8 @@ def plot(report_path: Path, image_path: Path) -> None:
     axes.legend()
     figure.tight_layout()
     image_path.parent.mkdir(parents=True, exist_ok=True)
-    # Matplotlib's dynamic savefig signature is incompletely typed in upstream stubs.
-    save_image = cast("Callable[..., object]", figure.savefig)
-    save_image(image_path, dpi=160)
+    # Cast the library boundary, rather than disabling pyright strict.
+    cast("_SaveImage", figure).savefig(image_path, dpi=160)
     print(f"Saved chart: {image_path}")
 
 
