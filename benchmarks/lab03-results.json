@@ -1,0 +1,306 @@
+{
+  "corpus": "data\\python_docs",
+  "num_docs": 514,
+  "labeled_queries": 10,
+  "metric": "P@5 = relevant retrieved within top five / 5",
+  "rows": [
+    {
+      "query": "asyncio tasks",
+      "relevant_paths": [
+        "library/asyncio-eventloop.txt",
+        "library/asyncio-task.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "whatsnew/changelog.txt",
+          "library/asyncio-task.txt",
+          "howto/a-conceptual-overview-of-asyncio.txt",
+          "library/asyncio-sync.txt",
+          "whatsnew/3.8.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/asyncio-task.txt",
+          "library/asyncio-sync.txt",
+          "library/asyncio-queue.txt",
+          "library/asyncio-api-index.txt",
+          "howto/a-conceptual-overview-of-asyncio.txt"
+        ]
+      }
+    },
+    {
+      "query": "regular expression",
+      "relevant_paths": [
+        "howto/regex.txt",
+        "library/re.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.4,
+        "relevant_found": 2,
+        "top5": [
+          "whatsnew/changelog.txt",
+          "library/re.txt",
+          "howto/regex.txt",
+          "reference/expressions.txt",
+          "library/string.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.4,
+        "relevant_found": 2,
+        "top5": [
+          "library/re.txt",
+          "howto/regex.txt",
+          "library/text.txt",
+          "library/string.txt",
+          "reference/lexical_analysis.txt"
+        ]
+      }
+    },
+    {
+      "query": "json encoder",
+      "relevant_paths": [
+        "library/json.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "whatsnew/changelog.txt",
+          "library/json.txt",
+          "howto/logging-cookbook.txt",
+          "contents.txt",
+          "whatsnew/3.5.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/json.txt",
+          "library/netdata.txt",
+          "library/index.txt",
+          "howto/logging-cookbook.txt",
+          "library/struct.txt"
+        ]
+      }
+    },
+    {
+      "query": "pickle serialization",
+      "relevant_paths": [
+        "library/pickle.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/pickle.txt",
+          "whatsnew/changelog.txt",
+          "contents.txt",
+          "library/zoneinfo.txt",
+          "howto/logging-cookbook.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/pickle.txt",
+          "library/persistence.txt",
+          "library/zoneinfo.txt",
+          "library/shelve.txt",
+          "library/index.txt"
+        ]
+      }
+    },
+    {
+      "query": "pathlib paths",
+      "relevant_paths": [
+        "library/os.path.txt",
+        "library/pathlib.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "whatsnew/changelog.txt",
+          "library/pathlib.txt",
+          "whatsnew/3.6.txt",
+          "contents.txt",
+          "library/os.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/pathlib.txt",
+          "library/glob.txt",
+          "library/filesys.txt",
+          "library/compileall.txt",
+          "whatsnew/3.6.txt"
+        ]
+      }
+    },
+    {
+      "query": "functools cache",
+      "relevant_paths": [
+        "library/functools.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "whatsnew/changelog.txt",
+          "library/functools.txt",
+          "whatsnew/3.2.txt",
+          "whatsnew/3.4.txt",
+          "whatsnew/3.8.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/functools.txt",
+          "library/fnmatch.txt",
+          "whatsnew/3.2.txt",
+          "whatsnew/3.8.txt",
+          "whatsnew/3.4.txt"
+        ]
+      }
+    },
+    {
+      "query": "threading lock",
+      "relevant_paths": [
+        "library/threading.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "whatsnew/changelog.txt",
+          "library/threading.txt",
+          "library/multiprocessing.txt",
+          "c-api/init.txt",
+          "glossary.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/threading.txt",
+          "library/multiprocessing.txt",
+          "howto/free-threading-python.txt",
+          "library/_thread.txt",
+          "howto/free-threading-extensions.txt"
+        ]
+      }
+    },
+    {
+      "query": "unittest mock",
+      "relevant_paths": [
+        "library/unittest.mock.txt",
+        "library/unittest.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/unittest.mock.txt",
+          "whatsnew/changelog.txt",
+          "library/unittest.mock-examples.txt",
+          "contents.txt",
+          "whatsnew/3.6.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/unittest.mock.txt",
+          "library/development.txt",
+          "library/unittest.mock-examples.txt",
+          "library/index.txt",
+          "contents.txt"
+        ]
+      }
+    },
+    {
+      "query": "typing protocol",
+      "relevant_paths": [
+        "library/typing.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "whatsnew/changelog.txt",
+          "library/typing.txt",
+          "whatsnew/3.12.txt",
+          "whatsnew/3.13.txt",
+          "whatsnew/3.10.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/typing.txt",
+          "deprecations/index.txt",
+          "deprecations/pending-removal-in-3.17.txt",
+          "whatsnew/3.12.txt",
+          "whatsnew/3.10.txt"
+        ]
+      }
+    },
+    {
+      "query": "collections counter",
+      "relevant_paths": [
+        "library/collections.txt"
+      ],
+      "missing_label_paths": [],
+      "tfidf": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "whatsnew/changelog.txt",
+          "library/collections.txt",
+          "library/typing.txt",
+          "builtins/stdtypes.txt",
+          "whatsnew/3.2.txt"
+        ]
+      },
+      "bm25": {
+        "precision_at_5": 0.2,
+        "relevant_found": 1,
+        "top5": [
+          "library/collections.txt",
+          "library/datatypes.txt",
+          "whatsnew/3.1.txt",
+          "library/dis.txt",
+          "whatsnew/3.2.txt"
+        ]
+      }
+    }
+  ],
+  "mean_p_at_5": {
+    "tfidf": 0.22,
+    "bm25": 0.22
+  }
+}
