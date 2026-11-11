@@ -20,3 +20,6 @@ index-with-positions.bin
 
 # Lab 03 generated positional index
 index-lab03.bin
+
+# Lab 05 temporary local build outputs; only benchmark JSON/PNG belong in Git.
+index-lab05*.bin
