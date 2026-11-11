@@ -224,6 +224,7 @@ def benchmark(
     machine = {
         "cpu_model": cpu_model(),
         "logical_cores": os.cpu_count(),
+        "physical_cores": psutil.cpu_count(logical=False),
         "python": sys.version.split()[0],
         "python_abi": sys.abiflags,
         "sys._is_gil_enabled()": state,
