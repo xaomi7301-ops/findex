@@ -1,35 +1,57 @@
-"""Lab 03 measured ranking checks and human-selected precision@5 labels."""
+"""Measured BM25 sanity checks and manually labeled precision@5 evaluation."""
 
 from __future__ import annotations
 
 import json
 from pathlib import Path
+from typing import TypedDict, cast
 
 from findex.index import Posting, posting_doc_ids
 from findex.object_model import Index
-from findex.ranking import BM25, TfIdf, ranked_search
+from findex.ranking import BM25, Scorer, TfIdf, ranked_search
+
+
+class LabeledQuery(TypedDict):
+    query: str
+    relevant_paths: list[str]
+
+
+class LabelsFile(TypedDict):
+    queries: list[LabeledQuery]
+
+
+class ScoreRow(TypedDict):
+    precision_at_5: float
+    relevant_found: int
+    top5: list[str]
+
+
+class EvaluationRow(TypedDict):
+    query: str
+    relevant_paths: list[str]
+    missing_label_paths: list[str]
+    tfidf: ScoreRow
+    bm25: ScoreRow
 
 
 def print_sanity(index: Index) -> None:
-    """Three controlled BM25 checks using statistics of the *real* index.
-
-    Fixed tf=1 (or 19/20) isolates the contribution being tested; corpus
-    document frequencies and lengths are always real measured values.
-    """
+    """Three controlled BM25 checks using frequencies from a real corpus."""
     bm25 = BM25()
-    # Prefer a human-readable rare term present in Python documentation.
     rare = next(
-        (term for term in ("frozenset", "weakref", "asynciogenerator", "metaclass")
-         if 0 < index.df(term) < index.num_docs // 3),
+        (
+            term for term in ("frozenset", "weakref", "asynciogenerator", "metaclass")
+            if 0 < index.df(term) < index.num_docs // 3
+        ),
         None,
     )
     if rare is None:
-        rare = min((term for term in index if term.isalpha() and len(term) > 4),
-                   key=index.df)
+        rare = min(
+            (term for term in index if term.isalpha() and len(term) > 4),
+            key=index.df,
+        )
     common = max(index, key=index.df)
     rare_id = posting_doc_ids(index[rare])[0]
     common_id = posting_doc_ids(index[common])[0]
-    # Held tf constant to compare term rarity; IDs belong to real docs.
     rare_weight = bm25.score(rare, Posting(rare_id, 1), index)
     common_weight = bm25.score(common, Posting(common_id, 1), index)
     print("SANITY 1 — rare term vs frequent term, controlled tf=1:")
@@ -37,11 +59,10 @@ def print_sanity(index: Index) -> None:
     print(f"  {common!r}: df={index.df(common)}, score={common_weight:.6f}")
     print(f"  Rare term has larger contribution: {rare_weight > common_weight}")
 
-    sample_id = rare_id
-    score1 = bm25.score(rare, Posting(sample_id, 1), index)
-    score2 = bm25.score(rare, Posting(sample_id, 2), index)
-    score19 = bm25.score(rare, Posting(sample_id, 19), index)
-    score20 = bm25.score(rare, Posting(sample_id, 20), index)
+    score1 = bm25.score(rare, Posting(rare_id, 1), index)
+    score2 = bm25.score(rare, Posting(rare_id, 2), index)
+    score19 = bm25.score(rare, Posting(rare_id, 19), index)
+    score20 = bm25.score(rare, Posting(rare_id, 20), index)
     print("SANITY 2 — diminishing returns, fixed doc length and term:")
     print(f"  tf 1→2 delta={score2 - score1:.6f}")
     print(f"  tf 19→20 delta={score20 - score19:.6f}")
@@ -58,48 +79,46 @@ def print_sanity(index: Index) -> None:
     print("Checks use genuine corpus df/length statistics with controlled tf values.")
 
 
-def evaluate(index: Index, label_path: Path, out_path: Path) -> dict:
-    """Evaluate two scorers on ten manually selected query/relevant-path sets.
+def _precision(index: Index, query: str, relevant: set[str], scorer: Scorer) -> ScoreRow:
+    hits = ranked_search(index, query, scorer=scorer, k=5)
+    paths = [hit.path for hit in hits]
+    count = sum(path in relevant for path in paths)
+    return {
+        "precision_at_5": round(count / 5.0, 3),
+        "relevant_found": count,
+        "top5": paths,
+    }
 
-    Precision@5 = number of relevant documents in first five / 5.
-    The labels are deliberately a small, explicit human-selected test set;
-    they are not synthetic rankings or inferred from model outputs.
-    """
-    data = json.loads(Path(label_path).read_text(encoding="utf-8"))
+
+def evaluate(index: Index, label_path: Path, out_path: Path) -> dict[str, object]:
+    """Evaluate both scorers against 10 manually labeled query sets."""
+    data = cast(LabelsFile, json.loads(Path(label_path).read_text(encoding="utf-8")))
     records = data["queries"]
     if len(records) != 10:
         raise ValueError("Lab 03 expects exactly 10 manually labeled queries")
 
     existing = {meta.path for meta in index.doc_meta.values()}
-    rows: list[dict] = []
+    rows: list[EvaluationRow] = []
     for item in records:
         query = item["query"]
-        relevant = set(item["relevant_paths"])
+        relevant: set[str] = set(item["relevant_paths"])
         missing = sorted(relevant - existing)
         if missing:
             print(f"WARNING: labels absent from this corpus for {query!r}: {missing}")
-        results = {}
-        for name, scorer in (("tfidf", TfIdf()), ("bm25", BM25())):
-            hits = ranked_search(index, query, scorer=scorer, k=5)
-            paths = [hit.path for hit in hits]
-            relevant_retrieved = sum(path in relevant for path in paths)
-            results[name] = {
-                "precision_at_5": round(relevant_retrieved / 5.0, 3),
-                "relevant_found": relevant_retrieved,
-                "top5": paths,
+        rows.append(
+            {
+                "query": query,
+                "relevant_paths": sorted(relevant),
+                "missing_label_paths": missing,
+                "tfidf": _precision(index, query, relevant, TfIdf()),
+                "bm25": _precision(index, query, relevant, BM25()),
             }
-        rows.append({
-            "query": query,
-            "relevant_paths": sorted(relevant),
-            "missing_label_paths": missing,
-            **results,
-        })
-
-    average = {
+        )
+    average: dict[str, float] = {
         key: round(sum(row[key]["precision_at_5"] for row in rows) / len(rows), 3)
         for key in ("tfidf", "bm25")
     }
-    output = {
+    output: dict[str, object] = {
         "corpus": str(index.corpus_root),
         "num_docs": index.num_docs,
         "labeled_queries": 10,
