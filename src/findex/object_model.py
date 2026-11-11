@@ -7,7 +7,7 @@ For phrase search build a new index with --positions; no rewrite of lab-02 tags.
 from __future__ import annotations
 
 import logging
-from collections.abc import Iterator, Mapping
+from collections.abc import Generator, Iterator, Mapping
 from contextlib import contextmanager
 from functools import cached_property, lru_cache
 from pathlib import Path
@@ -130,6 +130,12 @@ class Index(Mapping[str, PostingList]):
         self._closed = True
 
     @property
+    def raw(self) -> InvertedIndex:
+        """Expose the underlying Lab 02 index to serialization code."""
+        self._ensure_open()
+        return self._raw
+
+    @property
     def closed(self) -> bool:
         return self._closed
 
@@ -148,7 +154,7 @@ def load_ranked_index(path: Path, *, corpus_root: Path | None = None) -> Index:
 
 
 @contextmanager
-def open_index(path: Path, *, corpus_root: Path | None = None) -> Iterator[Index]:
+def open_index(path: Path, *, corpus_root: Path | None = None) -> Generator[Index]:
     """Open and reliably close an Index on normal and exceptional exit."""
     ix = load_ranked_index(path, corpus_root=corpus_root)
     try:
