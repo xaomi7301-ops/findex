@@ -43,7 +43,7 @@ class DocMeta:
     title: str
 
 
-type PostingList = list[Posting] | list[PlainPosting] | array[int]
+type PostingList = list[Posting | PlainPosting] | array[int]
 type StorageName = Literal["plain", "slots", "array"]
 
 
