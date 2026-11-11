@@ -94,11 +94,21 @@ def snippet_for(index: Index, doc_id: int, terms: tuple[str, ...], *, radius: in
 
     unique_terms = sorted({term for term in terms if term}, key=len, reverse=True)
     pattern = (
-        re.compile("|".join(re.escape(term) for term in unique_terms), re.IGNORECASE)
+        re.compile(
+            r"(?<!\w)(?:" + "|".join(re.escape(term) for term in unique_terms) + r")(?!\w)",
+            re.IGNORECASE,
+        )
         if unique_terms
         else None
     )
-    found = pattern.search(text) if pattern is not None else None
+    # Prefer the rarest matching query term instead of simply the earliest hit.
+    found = None
+    if pattern is not None:
+        for term in sorted(unique_terms, key=index.df):
+            candidate = re.search(r"(?<!\w)" + re.escape(term) + r"(?!\w)", text, re.IGNORECASE)
+            if candidate is not None:
+                found = candidate
+                break
     at = found.start() if found is not None else 0
     start = max(0, at - radius)
     end = min(len(text), at + radius + (len(found.group()) if found else 0))
