@@ -186,9 +186,7 @@ def merge(partials: Iterable[PartialIndex]) -> InvertedIndex:
     for part in ordered:
         for term, local in part.postings.items():
             target = merged.setdefault(term, [])
-            target.extend(
-                Posting(mapping[p.doc_id], p.tf, p.positions) for p in local
-            )
+            target.extend(Posting(mapping[p.doc_id], p.tf, p.positions) for p in local)
     for target in merged.values():
         target.sort(key=lambda posting: posting.doc_id)
     # Runtime values are all list[Posting]; the public API allows other posting types.
