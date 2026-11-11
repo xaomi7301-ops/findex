@@ -1,0 +1,16 @@
+Mode:              lazy
+Documents:         1,000
+Tokens:            216,619
+Vocabulary:        1,384
+Elapsed:           2.030 s
+Peak tracemalloc:  0.379 MiB
+
+| Version | Documents | Peak memory (MiB) | Elapsed (s) |
+|---|---:|---:|---:|
+| eager | 1000 | 18.788 | 1.782 |
+| lazy | 1000 | 0.379 | 2.030 |
+
+Results verified: counts and full vocabulary are identical.
+Note: These measurements were made with the original demo corpus distributed in the ZIP,
+not the compact synthetic generator in this online repository. Regenerate and benchmark locally
+to collect fresh numbers before changing the benchmark table.
