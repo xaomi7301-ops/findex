@@ -6,6 +6,7 @@ import argparse
 import time
 import tracemalloc
 from pathlib import Path
+from typing import Literal
 
 from findex.index import InvertedIndex, posting_doc_ids
 from findex.store import load
@@ -76,7 +77,7 @@ def _lex(query: str) -> list[str]:
     return tokens
 
 
-def search(index: InvertedIndex, query: str, *, engine: str = "merge") -> list[int]:
+def search(index: InvertedIndex, query: str, *, engine: Literal["merge", "set"] = "merge") -> list[int]:
     """Evaluate left-to-right Boolean query, with adjacent terms as AND.
 
     Examples: 'python typing', 'python OR json', 'python NOT legacy',
@@ -90,7 +91,7 @@ def search(index: InvertedIndex, query: str, *, engine: str = "merge") -> list[i
         return []
 
     universe = sorted(index.doc_lengths)
-    result: list[int] | set[int] | None = None
+    result: list[int] | None = None
     operator = "AND"
     awaiting_term = False
     offset = 0
@@ -118,26 +119,22 @@ def search(index: InvertedIndex, query: str, *, engine: str = "merge") -> list[i
         offset += 1
         ids = posting_doc_ids(index.postings.get(part, []))
 
-        if engine == "merge":
-            current: list[int] = merge_not(universe, ids) if negate else ids
-            if result is None:
-                result = current
-            elif operator == "OR":
+        current = merge_not(universe, ids) if negate else ids
+        if result is None:
+            result = current
+        elif operator == "OR":
+            if engine == "merge":
                 result = merge_or(result, current)
             else:
-                result = merge_and(result, current)
+                result = sorted(set(result) | set(current))
+        elif engine == "merge":
+            result = merge_and(result, current)
         else:
-            current_set = set(universe) - set(ids) if negate else set(ids)
-            if result is None:
-                result = current_set
-            elif operator == "OR":
-                result |= current_set
-            else:
-                result &= current_set
+            result = sorted(set(result) & set(current))
         operator = "AND"
         awaiting_term = False
 
-    return sorted(result) if engine == "set" else result if result is not None else []
+    return result if result is not None else []
 
 
 def main() -> None:
