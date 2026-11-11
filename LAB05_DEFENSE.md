@@ -62,7 +62,9 @@ free-threaded лише коли його значення False. Я не вик�
 Free-threaded Python (після встановлення):
 
     uv python install 3.13t
-    uv run --python 3.13t python -m findex.lab05_benchmark run data/python_docs --executors serial,threads --repeats 3 --append --out benchmarks/lab05-results.json
+    & (uv python find 3.13t) -c "import sys; print(sys._is_gil_enabled())"
+    $env:PYTHONPATH = (Resolve-Path .\src).Path
+    uv run --no-project --python 3.13t --with "psutil==7.2.2" python -m findex.lab05_benchmark run data/python_docs --executors serial,threads --workers 1,2,4,8,all --repeats 3 --append --out benchmarks/lab05-results.json
 
 Графік:
 
