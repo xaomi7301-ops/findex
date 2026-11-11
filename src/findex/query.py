@@ -14,6 +14,7 @@ AST nodes are frozen dataclasses: structural equality tests compare trees.
 from __future__ import annotations
 
 import re
+from array import array
 from dataclasses import dataclass
 from typing import TYPE_CHECKING
 
@@ -66,16 +67,19 @@ class Phrase(Expr):
         if not self.terms:
             return set()
 
-        by_term = []
+        by_term: list[dict[int, tuple[int, ...]]] = []
         for term in self.terms:
-            posting_list = index.get(term, [])
-            # A positional index stores Posting objects, not array('I') pairs.
+            posting_list = index.get(term)
+            if posting_list is None:
+                return set()
+            if isinstance(posting_list, array):
+                raise ValueError("Phrase queries cannot use packed array postings")
             by_term.append({posting.doc_id: posting.positions for posting in posting_list})
-        candidates = set(by_term[0])
+        candidates: set[int] = set(by_term[0])
         for entries in by_term[1:]:
             candidates.intersection_update(entries)
 
-        result = set()
+        result: set[int] = set()
         for doc_id in candidates:
             starts = set(by_term[0][doc_id])
             for offset, entries in enumerate(by_term[1:], 1):
