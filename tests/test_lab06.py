@@ -4,9 +4,11 @@ from __future__ import annotations
 
 import asyncio
 import json
+import threading
 from pathlib import Path
 
 import httpx
+import pytest
 from typer.testing import CliRunner
 
 from findex.cli import app
@@ -188,3 +190,38 @@ def test_jsonl_stream_index_search(tmp_path: Path) -> None:
     result = json.loads(found.stdout)
     assert result["path"] == rows[0]["url"]
     assert "asyncio" in result["snippet"]
+
+
+def test_client_initialization_runs_off_event_loop(monkeypatch: pytest.MonkeyPatch) -> None:
+    """Client setup may load TLS certificates synchronously on Windows."""
+    real_client = httpx.AsyncClient
+    threads: list[int] = []
+
+    def construct(**kwargs: object) -> httpx.AsyncClient:
+        threads.append(threading.get_ident())
+        return real_client(**kwargs)
+
+    monkeypatch.setattr("findex.crawler.httpx.AsyncClient", construct)
+
+    async def run() -> None:
+        def respond(request: httpx.Request) -> httpx.Response:
+            if request.url.path == "/robots.txt":
+                return httpx.Response(404)
+            return httpx.Response(
+                200, text="<title>Python</title>", headers={"Content-Type": "text/html"}
+            )
+
+        loop_thread = threading.get_ident()
+        pages = [
+            page
+            async for page in crawl(
+                ["https://example.com/"],
+                max_pages=1,
+                delay=0,
+                transport=httpx.MockTransport(respond),
+            )
+        ]
+        assert len(pages) == 1
+        assert len(threads) == 1 and threads[0] != loop_thread
+
+    asyncio.run(run())
