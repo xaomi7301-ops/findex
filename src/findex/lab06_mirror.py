@@ -8,7 +8,7 @@ from __future__ import annotations
 import argparse
 import json
 import time
-from collections.abc import Iterator
+from collections.abc import Generator
 from contextlib import contextmanager
 from dataclasses import asdict
 from html import escape
@@ -17,7 +17,7 @@ from pathlib import Path
 from threading import Lock, Thread
 from urllib.parse import urlsplit
 
-from findex.crawl_runner import run_crawl
+from findex.crawl_runner import CrawlMeasurement, run_crawl
 
 
 class MirrorServer(ThreadingHTTPServer):
@@ -104,7 +104,7 @@ def make_pages(root: Path, count: int = 200) -> list[str]:
 
 
 @contextmanager
-def mirror(pages: list[str], port: int, latency: float) -> Iterator[MirrorServer]:
+def mirror(pages: list[str], port: int, latency: float) -> Generator[MirrorServer, None, None]:
     server = MirrorServer(port, pages, latency)
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
@@ -120,7 +120,7 @@ def benchmark(root: Path, port: int, latency: float, output: Path) -> None:
     pages = make_pages(root)
     output.mkdir(parents=True, exist_ok=True)
     seed = f"http://127.0.0.1:{port}/"
-    rows = []
+    rows: list[CrawlMeasurement] = []
     evidence: list[str] = []
     for concurrency in (1, 5, 20):
         log = output / f"crawl-{concurrency}.log"
@@ -132,7 +132,7 @@ def benchmark(root: Path, port: int, latency: float, output: Path) -> None:
             )
         if result.pages != 200:
             raise RuntimeError(f"Expected 200 pages, got {result.pages}")
-        rows.append(asdict(result))
+        rows.append(result)
         lines = log.read_text(encoding="utf-8").splitlines()
         evidence.extend(line for line in lines if "status=429" in line or "retry url=" in line)
         evidence.extend(
@@ -145,7 +145,7 @@ def benchmark(root: Path, port: int, latency: float, output: Path) -> None:
             evidence.extend(slow)
     report = {
         "seed": seed, "max_pages": 200, "per_host": 10, "delay_s": 0.001,
-        "server_latency_s": latency, "debug": True, "results": rows,
+        "server_latency_s": latency, "debug": True, "results": [asdict(row) for row in rows],
         "failure_and_debug_log": evidence,
     }
     target = output / "lab06-results.json"
@@ -153,8 +153,8 @@ def benchmark(root: Path, port: int, latency: float, output: Path) -> None:
     print("\nConcurrency | Pages | Wall s | Pages/s | Errors | Peak RSS MiB")
     for row in rows:
         print(
-            f"{row['concurrency']} | {row['pages']} | {row['wall_s']} | "
-            f"{row['pages_per_s']} | {row['errors']} | {row['peak_rss_mib']}"
+            f"{row.concurrency} | {row.pages} | {row.wall_s} | "
+            f"{row.pages_per_s} | {row.errors} | {row.peak_rss_mib}"
         )
     print(f"Saved: {target}")
 
