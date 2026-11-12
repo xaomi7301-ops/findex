@@ -1,0 +1,70 @@
+{
+  "query": "/search?q=python&k=10&scorer=bm25&page=1",
+  "results": [
+    {
+      "target": "local-async-direct-1-20",
+      "concurrency": 20,
+      "requests": 20,
+      "rps": 293.28953542937586,
+      "p50_ms": 45.651700000000005,
+      "p95_ms": 65.7621,
+      "p99_ms": 65.7621,
+      "wall_s": 0.068192,
+      "status": {
+        "200": 20
+      }
+    },
+    {
+      "target": "local-async-direct-1",
+      "concurrency": 50,
+      "requests": 500,
+      "rps": 333.7921417585852,
+      "p50_ms": 145.0253,
+      "p95_ms": 180.5919,
+      "p99_ms": 448.2932,
+      "wall_s": 1.4979382,
+      "status": {
+        "200": 500
+      }
+    },
+    {
+      "target": "local-sync-1-20",
+      "concurrency": 20,
+      "requests": 20,
+      "rps": 298.4834058150537,
+      "p50_ms": 59.732,
+      "p95_ms": 64.998,
+      "p99_ms": 64.998,
+      "wall_s": 0.0670054,
+      "status": {
+        "200": 20
+      }
+    },
+    {
+      "target": "local-sync-1",
+      "concurrency": 50,
+      "requests": 500,
+      "rps": 320.78470611437467,
+      "p50_ms": 155.28449999999998,
+      "p95_ms": 183.802,
+      "p99_ms": 287.40389999999996,
+      "wall_s": 1.5586778,
+      "status": {
+        "200": 500
+      }
+    },
+    {
+      "target": "local-sync-4",
+      "concurrency": 50,
+      "requests": 500,
+      "rps": 1.9918156041871553,
+      "p50_ms": 44.1612,
+      "p95_ms": 75.5382,
+      "p99_ms": 251023.4913,
+      "wall_s": 251.0272532,
+      "status": {
+        "200": 500
+      }
+    }
+  ]
+}
