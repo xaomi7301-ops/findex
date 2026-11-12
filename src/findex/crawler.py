@@ -310,12 +310,17 @@ async def crawl(
     if pending == 0:
         return
     gate = RequestGate(concurrency, per_host, delay, state)
-    async with httpx.AsyncClient(
+    # Client construction loads TLS certificates synchronously, which can be
+    # slow on Windows even for HTTP URLs. Do it before entering the event-loop
+    # request path, without disabling certificate verification.
+    client = await asyncio.to_thread(
+        httpx.AsyncClient,
         headers={"User-Agent": USER_AGENT},
         transport=transport,
         limits=httpx.Limits(max_connections=concurrency),
         trust_env=False,
-    ) as client:
+    )
+    async with client:
         robots = RobotsCache(client, gate, timeout)
 
         async def worker() -> None:
