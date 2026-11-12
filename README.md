@@ -1,5 +1,8 @@
 # findex — Лабораторна робота №1
 
+**Lab 07 — публічна вебадреса:** ще не розгорнуто; буде додано після успішного деплою.
+
+
 [![CI](https://github.com/xaomi7301-ops/findex/actions/workflows/ci.yml/badge.svg)](https://github.com/xaomi7301-ops/findex/actions/workflows/ci.yml)
 
 **Курс:** Python — будуємо власну пошукову систему `findex`  
@@ -1034,3 +1037,117 @@ Per-host=10 навмисно обмежує навіть concurrency=20: сер�
 
 **Здача:** тег lab-06 після фактичних вимірювань, тестів і
 публікації README. [Матеріал для захисту](LAB06_DEFENSE.md).
+
+
+---
+
+## Лабораторна №7 — пошук у вебі (FastAPI)
+
+Версія 0.7.0. Використовую корпус Python 3.13 з лаби 1 (локально 514 документів у попередніх вимірах); не змінюю теги попередніх робіт. Для Docker корпус відтворюється з офіційного архіву документації, який може оновлюватися; перед порівнянням перевіряю /stats. Джерело: https://docs.python.org/3.13/ та ліцензія https://docs.python.org/3/license.html.
+
+### API та інтерфейс
+
+- `GET /search?q=python&k=10&scorer=bm25&page=1` — Pydantic валідує параметри, повертає total, took_ms, page, результати з балами та сніпетами. k=1..100, page>=1, q до 200 символів.
+- `GET /docs/{doc_id}` — JSON документа або 404; `/docs` — Swagger OpenAPI; `/doc/{doc_id}` — HTML документа.
+- `GET /stats` — кількість документів, токенів, термів, розмір індексу, uptime.
+- `GET /health` — 200 тільки за завантаженого індексу, інакше 503.
+- `GET /` — Jinja2, CSS, поле пошуку, BM25/TF-IDF, сніпети з HTML-екрануванням, сторінки та перегляд документа.
+
+Settings (pydantic-settings) читає INDEX_PATH, CORPUS_PATH, HOST, PORT,
+WORKERS, LOG_LEVEL, SEARCH_MODE з оточення або .env. Lifespan один раз
+завантажує довірений індекс на процес, звільняє його при shutdown.
+Depends надає Index і Settings; тести TestClient замінюють get_index
+через dependency_overrides. Внутрішні структури залишилися dataclass-ами.
+Неочікуваний виняток логовано з request ID; клієнту повертається
+JSON 500 без стека. У відповіді є X-Request-ID.
+
+За замовчуванням SEARCH_MODE=sync: FastAPI запускає def у пулі потоків.
+SEARCH_MODE=async-direct — лише контрольований експеримент, виконує
+синхронний пошук у самому event loop, не використовувати в деплої.
+
+### Запуск Windows
+
+~~~powershell
+git pull --ff-only origin main
+uv lock
+uv sync --python 3.13
+uv run pytest -q
+uv run pyright
+uv run ruff check .
+uv run findex index data/python_docs --out index-lab07.bin --positions --executor serial
+$env:INDEX_PATH = "index-lab07.bin"
+$env:CORPUS_PATH = "data/python_docs"
+uv run findex serve --port 8000
+~~~
+
+Відкрити http://127.0.0.1:8000/, /docs, /stats, /health.
+Для зупинки Ctrl+C. Пошук `python AND (asyncio OR thread)`,
+`"event loop"` або `python` демонструє ранжування.
+
+### oha: реальні вимірювання
+
+Встановлення Windows: `winget install --id hatoo.oha --exact`.
+Після оновлення PATH перевірити `oha --version`.
+
+~~~powershell
+uv run python scripts/lab07_benchmark.py
+~~~
+
+Скрипт запускає і зупиняє окремі Uvicorn-сервери на 8017.
+Не запускайте інший сервер на цьому порту. Порівнює один worker
+async-direct/def з 20 запитами й concurrency=20, потім три локальні
+режими з 500 запитами/concurrency=50. Публічний тест:
+200 запитів/concurrency=20, тільки на власному сервісі.
+
+~~~powershell
+uv run python scripts/lab07_benchmark.py --public-url https://YOUR-SERVICE.onrender.com
+~~~
+
+Запит однаковий: /search?q=python&k=10&scorer=bm25&page=1.
+Прогріваємо /health та /search перед вимірюванням. Скрипт
+зберігає raw oha JSON, перевіряє HTTP 200, і виводить RPS,
+p50/p95/p99 у мілісекундах. Результати: benchmarks/lab07/.
+Кількість запитів фіксована, тому wall time також порівнюється.
+Рядки нижче не заповнюються вигаданими числами.
+
+| Target | Workers | Concurrency | RPS | p50 ms | p95 ms | p99 ms |
+|---|---:|---:|---:|---:|---:|---:|
+| local async-direct | 1 | 50 | — | — | — | — |
+| local def | 1 | 50 | — | — | — | — |
+| local def | 4 | 50 | — | — | — | — |
+| deployed def | 1 | 20 | — | — | — | — |
+
+Окремий M2 (20 одночасних запитів): pending actual measurements.
+Пояснення: CPU-bound ранжування з лаб 3/5 займає GIL, тому
+пул потоків не гарантує прискорення CPU-роботи, але не блокує
+event loop синхронними обчисленнями та читанням сніпетів.
+Чотири процеси мають окремі GIL та індекси (додаткова RAM).
+Asyncio з лаби 6 ефективний для очікування I/O, а не сам по собі
+для CPU. Публічні затримки залежать також від мережі/ресурсів
+Render, тож це не чистий тест масштабування процесора.
+
+### Docker та Render
+
+~~~powershell
+docker build -t findex:0.7.0 .
+docker run --rm -p 8000:8000 -e INDEX_PATH=/app/data/index.bin -e CORPUS_PATH=/app/data/python_docs findex:0.7.0
+~~~
+
+Dockerfile використовує builder + slim runtime, uv sync --locked,
+створює індекс з офіційної документації та запускається під non-root.
+Корпус не комітиться. Docker build потребує Інтернету для залежностей
+і архіву. Локальний uv.lock має бути закомічено після uv lock.
+
+Render: https://dashboard.render.com/ → New Web Service → GitHub
+репозиторій xaomi7301-ops/findex, branch main, Docker, Free (якщо
+доступний). Dockerfile path ./Dockerfile, health check /health.
+Налаштування INDEX_PATH=/app/data/index.bin,
+CORPUS_PATH=/app/data/python_docs, HOST=0.0.0.0, SEARCH_MODE=sync,
+WORKERS=1, LOG_LEVEL=info; PORT задає платформа.
+Альтернатива: New Blueprint із render.yaml. Публічний URL буде
+вказано після фактичного Deploy та /health=200.
+Free instance може засинати; прогріти перед oha, а холодний старт
+не включати в latency. Публічний тест лише на власному сервісі.
+
+**Здача:** після реального деплою, oha, перевірки CI і README
+створити тег lab-07. [Підготовка до захисту](LAB07_DEFENSE.md).
