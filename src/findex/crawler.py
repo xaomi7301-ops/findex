@@ -314,17 +314,18 @@ async def crawl(
                 try:
                     if not await robots.allowed(url):
                         logger.info("url=%s status=robots-denied bytes=0 elapsed=0", url)
-                        continue
-                    result = await fetch(client, url, gate=gate, timeout=timeout)
-                    if result.status in {301, 302, 303, 307, 308} and result.location:
-                        enqueue(urljoin(url, result.location))
-                    elif result.status == 200 and "html" in result.content_type.lower():
-                        title, text, links = await asyncio.to_thread(extract, result.body)
-                        for link in links:
-                            enqueue(urljoin(url, link))
-                        await results.put(Page(url, title or url, text, datetime.now(UTC).isoformat()))
                     else:
-                        state.errors += 1
+                        result = await fetch(client, url, gate=gate, timeout=timeout)
+                        if result.status in {301, 302, 303, 307, 308} and result.location:
+                            enqueue(urljoin(url, result.location))
+                        elif result.status == 200 and "html" in result.content_type.lower():
+                            title, text, links = await asyncio.to_thread(extract, result.body)
+                            for link in links:
+                                enqueue(urljoin(url, link))
+                            page = Page(url, title or url, text, datetime.now(UTC).isoformat())
+                            await results.put(page)
+                        else:
+                            state.errors += 1
                 finally:
                     frontier.task_done()
                     pending -= 1
