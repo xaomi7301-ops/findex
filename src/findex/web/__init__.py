@@ -5,6 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
+import threading
 from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
@@ -18,9 +19,11 @@ from fastapi.templating import Jinja2Templates
 from pydantic import BaseModel, Field
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
+from findex import __version__
 from findex.corpus import iter_documents
 from findex.object_model import Index, load_ranked_index
 from findex.ranking import BM25, Scorer, TfIdf, ranked_search
+from findex.semantic import MiniLM, SearchMode, SemanticData, SemanticSearch
 
 logger = logging.getLogger(__name__)
 ROOT = Path(__file__).resolve().parent
@@ -37,6 +40,9 @@ class Settings(BaseSettings):
     log_level: Literal["debug", "info", "warning", "error", "critical"] = "info"
     # Only for controlled benchmark: async-direct deliberately blocks the loop.
     search_mode: Literal["sync", "async-direct"] = "sync"
+    embeddings_path: Path | None = None
+    model_dir: Path = Path("data/lab08/model")
+    embedding_threads: Annotated[int, Field(ge=1, le=16)] = 2
 
 
 class SearchRequest(BaseModel):
@@ -44,6 +50,7 @@ class SearchRequest(BaseModel):
     k: int = Field(10, ge=1, le=100)
     scorer: Literal["bm25", "tfidf"] = "bm25"
     page: int = Field(1, ge=1, le=10000)
+    mode: SearchMode = "lexical"
 
 
 class Hit(BaseModel):
@@ -61,6 +68,7 @@ class SearchResponse(BaseModel):
     page: int
     k: int
     scorer: Literal["bm25", "tfidf"]
+    mode: SearchMode = "lexical"
     results: list[Hit]
 
 
@@ -90,17 +98,53 @@ def get_index(request: Request) -> Index:
     return index
 
 
-def perform_search(params: SearchRequest, index: Index) -> SearchResponse:
+class SemanticRuntime:
+    """One encoder per process; serialize inference to bound peak memory."""
+
+    def __init__(self, engine: SemanticSearch) -> None:
+        self.engine = engine
+        self.lock = threading.Lock()
+
+
+def get_semantic(request: Request) -> SemanticRuntime | None:
+    return cast(SemanticRuntime | None, getattr(request.app.state, "semantic", None))
+
+
+def load_semantic(config: Settings, index: Index) -> SemanticRuntime:
+    if config.embeddings_path is None:
+        raise ValueError("EMBEDDINGS_PATH must be configured")
+    data = SemanticData.load(config.embeddings_path, index)
+    return SemanticRuntime(SemanticSearch(data, MiniLM(config.model_dir, threads=config.embedding_threads)))
+
+
+def perform_search(
+    params: SearchRequest, index: Index, semantic: SemanticRuntime | None = None
+) -> SearchResponse:
     started = time.perf_counter()
     scorer: Scorer = BM25() if params.scorer == "bm25" else TfIdf()
     try:
-        total = len(index.matching_ids(params.q))
         offset = (params.page - 1) * params.k
-        hits = (
-            ranked_search(index, params.q, scorer=scorer, k=min(total, offset + params.k))
-            if offset < total
-            else []
-        )
+        if params.mode == "lexical":
+            total = len(index.matching_ids(params.q))
+            hits = (
+                ranked_search(index, params.q, scorer=scorer, k=min(total, offset + params.k))
+                if offset < total
+                else []
+            )
+        else:
+            if semantic is None:
+                raise HTTPException(503, "Semantic index not loaded")
+            if not params.q.strip():
+                raise ValueError("Empty query")
+            total = len(semantic.engine.data.paths)
+            with semantic.lock:
+                hits = (
+                    semantic.engine.search(
+                        index, params.q, mode=params.mode, k=min(total, offset + params.k)
+                    )
+                    if offset < total
+                    else []
+                )
     except (ValueError, RecursionError) as exc:
         raise HTTPException(422, "Invalid search query") from exc
     return SearchResponse(
@@ -110,6 +154,7 @@ def perform_search(params: SearchRequest, index: Index) -> SearchResponse:
         page=params.page,
         k=params.k,
         scorer=params.scorer,
+        mode=params.mode,
         results=[
             Hit(
                 doc_id=hit.doc_id,
@@ -152,15 +197,26 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     @asynccontextmanager
     async def lifespan(application: FastAPI) -> AsyncGenerator[None]:
         application.state.index = None
+        application.state.semantic = None
         application.state.started = time.monotonic()
         try:
             index = await asyncio.to_thread(
                 load_ranked_index, config.index_path, corpus_root=config.corpus_path
             )
+            # Materialize numeric buffers before serving concurrent searches.
+            await asyncio.to_thread(lambda: index.numpy_postings)
             application.state.index = index
             logger.info("Loaded %d documents from %s", index.num_docs, config.index_path)
         except (OSError, ValueError, EOFError):
             logger.exception("Index unavailable at startup")
+        if application.state.index is not None and config.embeddings_path is not None:
+            try:
+                loaded_index = cast(Index, application.state.index)
+                application.state.semantic = await asyncio.to_thread(load_semantic, config, loaded_index)
+                logger.info("Semantic index loaded from %s", config.embeddings_path)
+            except Exception:
+                # Startup may retain lexical search; health is 503 if semantic was configured.
+                logger.exception("Semantic index unavailable at startup")
         try:
             yield
         finally:
@@ -168,10 +224,12 @@ def create_app(settings: Settings | None = None) -> FastAPI:
             if index is not None:
                 index.close()
             application.state.index = None
+            application.state.semantic = None
 
-    application = FastAPI(title="findex", version="0.7.0", lifespan=lifespan)
+    application = FastAPI(title="findex", version=__version__, lifespan=lifespan)
     application.state.settings = config
     application.state.index = None
+    application.state.semantic = None
     application.state.started = time.monotonic()
     application.mount("/static", StaticFiles(directory=ROOT / "static"), name="static")
 
@@ -194,9 +252,10 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         async def search_async(
             params: Annotated[SearchRequest, Query()],
             index: Annotated[Index, Depends(get_index)],
+            semantic: Annotated[SemanticRuntime | None, Depends(get_semantic)],
         ) -> SearchResponse:
             # Benchmark baseline only: deliberately performs blocking work in the loop.
-            return perform_search(params, index)
+            return perform_search(params, index, semantic)
 
     else:
 
@@ -204,8 +263,9 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         def search_sync(
             params: Annotated[SearchRequest, Query()],
             index: Annotated[Index, Depends(get_index)],
+            semantic: Annotated[SemanticRuntime | None, Depends(get_semantic)],
         ) -> SearchResponse:
-            return perform_search(params, index)
+            return perform_search(params, index, semantic)
 
     @application.get("/docs/{doc_id}", response_model=DocumentResponse)
     def get_document(doc_id: int, index: Annotated[Index, Depends(get_index)]) -> DocumentResponse:
@@ -230,7 +290,13 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         )
 
     @application.get("/health")
-    def health(index: Annotated[Index, Depends(get_index)]) -> dict[str, str]:
+    def health(
+        index: Annotated[Index, Depends(get_index)],
+        cfg: Annotated[Settings, Depends(get_settings)],
+        semantic: Annotated[SemanticRuntime | None, Depends(get_semantic)],
+    ) -> dict[str, str]:
+        if cfg.embeddings_path is not None and semantic is None:
+            raise HTTPException(503, "Semantic index not loaded")
         if index.closed:
             raise HTTPException(503, "Index not loaded")
         return {"status": "ok"}
@@ -239,22 +305,27 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     def home(
         request: Request,
         index: Annotated[Index, Depends(get_index)],
+        semantic: Annotated[SemanticRuntime | None, Depends(get_semantic)],
         q: Annotated[str, Query(max_length=200)] = "",
         k: Annotated[int, Query(ge=1, le=100)] = 10,
         scorer: Literal["bm25", "tfidf"] = "bm25",
         page: Annotated[int, Query(ge=1, le=10000)] = 1,
+        mode: SearchMode = "lexical",
     ) -> Response:
         results = None
         error = ""
         if q.strip():
             try:
-                results = perform_search(SearchRequest(q=q, k=k, scorer=scorer, page=page), index)
+                results = perform_search(
+                    SearchRequest(q=q, k=k, scorer=scorer, page=page, mode=mode), index, semantic
+                )
             except HTTPException as exc:
                 error = str(exc.detail)
         return templates.TemplateResponse(
             request=request,
             name="index.html",
-            context={"q": q, "results": results, "scorer": scorer, "k": k, "error": error},
+            context={"q": q, "results": results, "scorer": scorer, "k": k, "error": error,
+                     "mode": mode, "semantic_ready": semantic is not None, "version": __version__},
         )
 
     @application.get("/doc/{doc_id}", response_class=HTMLResponse, include_in_schema=False)

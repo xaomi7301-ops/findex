@@ -1,0 +1,81 @@
+{
+  "description": "Fixed, hand-labeled topics. Candidate order is fixed before measuring any retrieval result; the evaluator selects the first candidate with zero normalized query tokens in every target document. The alternative phrases exist only to satisfy the zero-overlap constraint, not to select high-scoring results.",
+  "queries": [
+    {
+      "topic": "coroutines and task scheduling",
+      "relevant_paths": [
+        "library/asyncio-task.txt"
+      ],
+      "candidates": [
+        "juggling chores",
+        "cooperative multitasking",
+        "interleaving chores",
+        "concurrent chores",
+        "juggling workstreams",
+        "asynchronous multitasking",
+        "cooperatively juggling chores"
+      ],
+      "reason": "Several independent activities making progress via cooperative scheduling."
+    },
+    {
+      "topic": "regular expressions",
+      "relevant_paths": [
+        "library/re.txt"
+      ],
+      "candidates": [
+        "wildcarded patternmatching",
+        "textual patternmatching",
+        "patternmatching substrings",
+        "wildcarded textmatching",
+        "wildcarding textual patterns",
+        "patternmatching textual substrings"
+      ],
+      "reason": "Matching character sequences using flexible patterns."
+    },
+    {
+      "topic": "JSON encoding",
+      "relevant_paths": [
+        "library/json.txt"
+      ],
+      "candidates": [
+        "interoperable payload marshalling",
+        "crossplatform payload marshalling",
+        "portable payload marshalling",
+        "crossplatform message marshalling",
+        "interoperable datagram marshalling",
+        "crossplatform structured marshalling"
+      ],
+      "reason": "Representing structured messages for exchange between systems."
+    },
+    {
+      "topic": "filesystem paths",
+      "relevant_paths": [
+        "library/pathlib.txt"
+      ],
+      "candidates": [
+        "navigating folders",
+        "folder navigation",
+        "filesystem breadcrumbs",
+        "navigating directories",
+        "folder whereabouts",
+        "hierarchical breadcrumbs"
+      ],
+      "reason": "Navigating and manipulating filesystem locations."
+    },
+    {
+      "topic": "counting items",
+      "relevant_paths": [
+        "library/collections.txt"
+      ],
+      "candidates": [
+        "tallying multiplicities",
+        "histogramming tallies",
+        "tallying occurrences",
+        "tallying repetitions",
+        "histogramming frequencies",
+        "histogramming multiplicities"
+      ],
+      "reason": "Counting repeated items in a collection."
+    }
+  ]
+}
