@@ -258,7 +258,7 @@ async def crawl(
     allowed_domains: Iterable[str] | None = None,
     stats: CrawlStats | None = None,
     transport: httpx.AsyncBaseTransport | None = None,
-) -> AsyncGenerator[Page, None]:
+) -> AsyncGenerator[Page]:
     """Yield successful HTML pages; cancel workers at the budget or on close.
 
     The allowlist is exact origins (scheme, host, port), not suffix matching.
