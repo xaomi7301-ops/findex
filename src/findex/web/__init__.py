@@ -132,9 +132,7 @@ def document(index: Index, doc_id: int) -> DocumentResponse:
         raise HTTPException(404, "Document content unavailable")
     try:
         if root.suffix.lower() == ".jsonl":
-            text = next(
-                (doc.text for doc in iter_documents(root) if doc.doc_id == meta.path), None
-            )
+            text = next((doc.text for doc in iter_documents(root) if doc.doc_id == meta.path), None)
         else:
             base = root.resolve()
             source = (base / meta.path).resolve()

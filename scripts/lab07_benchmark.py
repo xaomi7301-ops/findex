@@ -35,22 +35,28 @@ def wait_ready(base: str, process: subprocess.Popen[bytes] | None = None) -> Non
 
 def measure(base: str, output: Path, name: str, concurrency: int, count: int) -> dict:
     command = [
-        "oha", "--no-tui", "--output-format", "json", "-n", str(count),
-        "-c", str(concurrency), base + QUERY,
+        "oha",
+        "--no-tui",
+        "--output-format",
+        "json",
+        "-n",
+        str(count),
+        "-c",
+        str(concurrency),
+        base + QUERY,
     ]
     result = subprocess.run(command, check=True, capture_output=True, text=True, encoding="utf-8")
     payload = json.loads(result.stdout)
-    (output / f"{name}.json").write_text(
-        json.dumps(payload, indent=2) + "\n", encoding="utf-8"
-    )
+    (output / f"{name}.json").write_text(json.dumps(payload, indent=2) + "\n", encoding="utf-8")
     status = payload["statusCodeDistribution"]
     if status.get("200", 0) != count or payload["errorDistribution"]:
         raise RuntimeError(f"{name}: non-200 responses or errors: {status}")
     row = {
-        "target": name, "concurrency": concurrency, "requests": count,
+        "target": name,
+        "concurrency": concurrency,
+        "requests": count,
         "rps": payload["summary"]["requestsPerSec"],
-        **{key + "_ms": payload["latencyPercentiles"][key] * 1000
-           for key in ("p50", "p95", "p99")},
+        **{key + "_ms": payload["latencyPercentiles"][key] * 1000 for key in ("p50", "p95", "p99")},
         "wall_s": payload["summary"]["total"],
         "status": status,
     }
@@ -65,7 +71,9 @@ def stop(process: subprocess.Popen[bytes]) -> None:
         # Terminate the supervisor and all Uvicorn workers on Windows.
         subprocess.run(
             ["taskkill", "/PID", str(process.pid), "/T", "/F"],
-            check=False, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            check=False,
+            stdout=subprocess.DEVNULL,
+            stderr=subprocess.DEVNULL,
         )
     else:
         process.terminate()
@@ -82,12 +90,23 @@ def local(output: Path, port: int) -> list[dict]:
     for mode, workers in (("async-direct", 1), ("sync", 1), ("sync", 4)):
         name = f"local-{mode}-{workers}"
         env = {
-            **os.environ, "SEARCH_MODE": mode, "INDEX_PATH": str(Path("index-lab07.bin").resolve()),
+            **os.environ,
+            "SEARCH_MODE": mode,
+            "INDEX_PATH": str(Path("index-lab07.bin").resolve()),
             "CORPUS_PATH": str(Path("data/python_docs").resolve()),
         }
         command = [
-            sys.executable, "-m", "uvicorn", "findex.web:app", "--host", "127.0.0.1",
-            "--port", str(port), "--workers", str(workers), "--no-access-log",
+            sys.executable,
+            "-m",
+            "uvicorn",
+            "findex.web:app",
+            "--host",
+            "127.0.0.1",
+            "--port",
+            str(port),
+            "--workers",
+            str(workers),
+            "--no-access-log",
         ]
         with (output / f"{name}.log").open("wb") as log:
             process = subprocess.Popen(command, env=env, stdout=log, stderr=log)
