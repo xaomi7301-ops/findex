@@ -23,3 +23,7 @@ index-lab03.bin
 
 # Lab 05 temporary local build outputs; only benchmark JSON/PNG belong in Git.
 index-lab05*.bin
+
+# Lab 06 local generated output
+crawl.log
+index-lab06*.bin
