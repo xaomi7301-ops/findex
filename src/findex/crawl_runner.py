@@ -67,10 +67,17 @@ async def collect(
     start: float,
     live: Live,
 ) -> None:
+    stop = asyncio.Event()
+
     async def refresh() -> None:
-        while True:
-            live.update(dashboard(state, start))
-            await asyncio.sleep(0.15)
+        while not stop.is_set():
+            # Terminal rendering can perform blocking console I/O on Windows.
+            await asyncio.to_thread(live.update, dashboard(state, start), refresh=True)
+            try:
+                async with asyncio.timeout(0.15):
+                    await stop.wait()
+            except TimeoutError:
+                pass
 
     ticker = asyncio.create_task(refresh())
     try:
@@ -89,9 +96,9 @@ async def collect(
                 # File I/O is not performed on the event loop.
                 await asyncio.to_thread(write_line, stream, line)
     finally:
-        ticker.cancel()
-        await asyncio.gather(ticker, return_exceptions=True)
-        live.update(dashboard(state, start))
+        stop.set()
+        await ticker
+        await asyncio.to_thread(live.update, dashboard(state, start), refresh=True)
 
 
 def run_crawl(
