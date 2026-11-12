@@ -83,7 +83,7 @@ class CrawlStats:
 class RequestGate:
     """Global and per-origin limits, with a delay between request starts."""
 
-    def __init__(self, concurrency: int, per_host: int, delay: float, stats: CrawlStats):
+    def __init__(self, concurrency: int, per_host: int, delay: float, stats: CrawlStats) -> None:
         self.global_limit = asyncio.Semaphore(concurrency)
         self.per_host = per_host
         self.delay = delay
@@ -172,7 +172,7 @@ async def fetch(
 class RobotsCache:
     """One robots request per origin, including concurrent first access."""
 
-    def __init__(self, client: httpx.AsyncClient, gate: RequestGate, timeout: float):
+    def __init__(self, client: httpx.AsyncClient, gate: RequestGate, timeout: float) -> None:
         self.client = client
         self.gate = gate
         self.timeout = timeout
@@ -328,8 +328,8 @@ async def crawl(
                 finally:
                     frontier.task_done()
                     pending -= 1
-                    if pending == 0:
-                        await results.put(None)
+                if pending == 0:
+                    await results.put(None)
 
         async with asyncio.TaskGroup() as group:
             tasks = [group.create_task(worker()) for _ in range(concurrency)]
