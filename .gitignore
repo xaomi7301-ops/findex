@@ -31,3 +31,6 @@ index-lab06*.bin
 # Lab 07 local artifacts
 index-lab07*.bin
 .env
+
+# Local Lab 07 Uvicorn benchmark logs
+benchmarks/lab07/*.log

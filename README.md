@@ -1,6 +1,6 @@
 # findex — Лабораторна робота №1
 
-**Lab 07 — публічна вебадреса:** ще не розгорнуто; буде додано після успішного деплою.
+**Lab 07 — публічна вебадреса:** [https://findex-search-1n7g.onrender.com](https://findex-search-1n7g.onrender.com) · [Swagger](https://findex-search-1n7g.onrender.com/docs) · [Health](https://findex-search-1n7g.onrender.com/health).
 
 
 [![CI](https://github.com/xaomi7301-ops/findex/actions/workflows/ci.yml/badge.svg)](https://github.com/xaomi7301-ops/findex/actions/workflows/ci.yml)
@@ -1100,7 +1100,7 @@ async-direct/def з 20 запитами й concurrency=20, потім три л�
 200 запитів/concurrency=20, тільки на власному сервісі.
 
 ~~~powershell
-uv run python scripts/lab07_benchmark.py --public-url https://YOUR-SERVICE.onrender.com
+uv run python scripts/lab07_benchmark.py --public-url https://findex-search-1n7g.onrender.com
 ~~~
 
 Запит однаковий: /search?q=python&k=10&scorer=bm25&page=1.
@@ -1108,14 +1108,14 @@ uv run python scripts/lab07_benchmark.py --public-url https://YOUR-SERVICE.onren
 зберігає raw oha JSON, перевіряє HTTP 200, і виводить RPS,
 p50/p95/p99 у мілісекундах. Результати: benchmarks/lab07/.
 Кількість запитів фіксована, тому wall time також порівнюється.
-Рядки нижче не заповнюються вигаданими числами.
+Таблиця містить фактичні вимірювання від 12.11.2026.
 
 | Target | Workers | Concurrency | RPS | p50 ms | p95 ms | p99 ms |
 |---|---:|---:|---:|---:|---:|---:|
 | local async-direct | 1 | 50 | 333.79 | 145.03 | 180.59 | 448.29 |
 | local def | 1 | 50 | 320.78 | 155.28 | 183.80 | 287.40 |
 | local def (повтор) | 4 | 50 | 838.72 | 46.54 | 152.97 | 155.12 |
-| deployed def | 1 | 20 | — | — | — | — |
+| deployed def (Render) | 1 | 20 | 21.76 | 901.72 | 1308.47 | 1497.41 |
 
 Локальні вимірювання: 12.11.2026, Windows, AMD Ryzen 5 7430U
 (6 фізичних / 12 логічних ядер), Python 3.13.18, oha 1.16.0.
@@ -1158,7 +1158,21 @@ oha --no-tui -n 500 -c 50 -t 10s --output-format json -o benchmarks/lab07/local-
 `python AND (asyncio OR thread)` повернув 128 документів
 за 14.249 мс у конкретному запуску; перший результат —
 Developing with asyncio. Підсвічені сніпети та пагінація
-видимі у браузері. Публічний тест ще не проведено.
+видимі у браузері. На публічному сервісі той самий запит
+також повернув 128 документів, перший результат Developing with asyncio,
+час пошуку 12.566 мс у конкретному запуску.
+
+**Публічний oha:** 12.11.2026, Render Frankfurt, Free, один def-воркер,
+200 запитів/concurrency=20, 200/200 HTTP 200, без помилок.
+Wall time 9.1930946 с, RPS 21.755459799140976, p50 901.7229 мс,
+p95 1308.4725 мс, p99 1497.4139 мс. Запит той самий, що локально.
+Прогрів /health та /search виконано перед вимірюванням.
+Raw результати: benchmarks/lab07/deployed.json і public-results.json.
+Це end-to-end latency з мережею, а не лише внутрішній час ранжування.
+Локальні основні тести мали concurrency=50 і 500 запитів,
+тому різницю не можна приписати тільки GIL або CPU. Впливають
+мережа, ресурси хостингу та різна конкурентність; їх окремі
+внески не вимірювалися.
 
 Пояснення: CPU-bound ранжування з лаб 3/5 займає GIL, тому
 пул потоків не гарантує прискорення CPU-роботи, але не блокує
@@ -1186,10 +1200,21 @@ Render: https://dashboard.render.com/ → New Web Service → GitHub
 Налаштування INDEX_PATH=/app/data/index.bin,
 CORPUS_PATH=/app/data/python_docs, HOST=0.0.0.0, SEARCH_MODE=sync,
 WORKERS=1, LOG_LEVEL=info; PORT задає платформа.
-Альтернатива: New Blueprint із render.yaml. Публічний URL буде
-вказано після фактичного Deploy та /health=200.
+Альтернатива: New Blueprint із render.yaml.
+
+**Фактична перевірка Docker та деплою (12.11.2026).**
+Windows + WSL2, Docker Desktop 4.99.0 / Engine 29.9.3.
+hello-world пройшов, docker build завершився (19/19, 26.2 с),
+образ findex:0.7.0 запущено через docker run із INDEX_PATH;
+Uvicorn startup complete, повторні /health — HTTP 200.
+Dockerfile задає USER findex (не root). На Render перший деплой
+коміту ee48824 завершився успішно за 1 хв 5 с; статус Live,
+журнал підтвердив публічну адресу
+https://findex-search-1n7g.onrender.com і /health 200.
+Перевірено пошук у браузері та 200 HTTP-запитів oha.
+Попередження uv-build про версію 0.13.7 не завадило збірці
+ані локально, ані на Render.
 Free instance може засинати; прогріти перед oha, а холодний старт
 не включати в latency. Публічний тест лише на власному сервісі.
 
-**Здача:** після реального деплою, oha, перевірки CI і README
-створити тег lab-07. [Підготовка до захисту](LAB07_DEFENSE.md).
+**Здача:** репозиторій із тегом lab-07, публічна адреса вище та фактичні вимірювання oha. [Підготовка до захисту](LAB07_DEFENSE.md).

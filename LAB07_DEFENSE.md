@@ -3,7 +3,7 @@
 Тема: пошук у вебі: FastAPI, Pydantic, ASGI. Версія 0.7.0.
 
 ## Демо
-1. Відкрити власну публічну адресу (додати після деплою).
+1. Відкрити https://findex-search-1n7g.onrender.com (після простою дочекатися пробудження).
 2. Запитати python AND (asyncio OR thread), показати score, snippet,
    пагінацію та документ. Показати /docs, /stats, /health.
 3. Показати README з реальною таблицею oha, пояснити p50/p95/p99.
@@ -42,4 +42,20 @@
 
 Залишаю def у production, оскільки синхронний пошук
 працює в пулі потоків і не займає безпосередньо event loop.
-Публічну адресу і вимірювання Render додам після деплою.
+## Docker та публічний сервіс
+
+Локально Docker Engine 29.9.3: hello-world успішно, збірка
+19/19 за 26.2 с, контейнер findex:0.7.0 запущено з INDEX_PATH,
+health check 200. Render Frankfurt Free: перший Deploy succeeded
+за 1 хв 5 с, /health 200. Публічна адреса:
+https://findex-search-1n7g.onrender.com
+
+Публічний oha: 200/200 HTTP 200, concurrency=20,
+21.76 RPS, p50 901.72 мс, p95 1308.47 мс, p99 1497.41 мс,
+wall time 9.193 с. Це не чисте порівняння CPU: мережа,
+ресурси Render та інша конкурентність (локально 50).
+У браузері запит python AND (asyncio OR thread) повернув
+128 документів, перший Developing with asyncio, 12.566 мс
+внутрішнього часу пошуку. Цей час не є end-to-end latency oha.
+Безкоштовний інстанс засинає після простою; перед захистом
+відкрити сторінку і перевірити /health.
