@@ -1,0 +1,19 @@
+services:
+  - type: web
+    name: findex-search
+    runtime: docker
+    plan: free
+    healthCheckPath: /health
+    envVars:
+      - key: INDEX_PATH
+        value: /app/data/index.bin
+      - key: CORPUS_PATH
+        value: /app/data/python_docs
+      - key: HOST
+        value: 0.0.0.0
+      - key: SEARCH_MODE
+        value: sync
+      - key: WORKERS
+        value: "1"
+      - key: LOG_LEVEL
+        value: info

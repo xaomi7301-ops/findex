@@ -27,3 +27,7 @@ index-lab05*.bin
 # Lab 06 local generated output
 crawl.log
 index-lab06*.bin
+
+# Lab 07 local artifacts
+index-lab07*.bin
+.env

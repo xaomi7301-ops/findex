@@ -1,0 +1,13 @@
+<!doctype html>
+<html lang="uk"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+<title>findex · Пошук документації Python</title><link rel="stylesheet" href="/static/style.css"></head>
+<body><header><a class="brand" href="/">findex<span>.</span></a><nav><a href="/docs">API</a><a href="/stats">Статистика</a><a href="/health">Статус</a></nav></header>
+<main><section class="hero"><div class="eyebrow">PYTHON DOCUMENTATION / LAB 07</div><h1>Знайди потрібне<br>в документації Python.</h1><p>Повнотекстовий пошук, логічні запити та ранжування BM25.</p>
+<form action="/" method="get"><div class="searchbox"><input name="q" value="{{ q }}" placeholder='asyncio OR "event loop"' aria-label="Пошуковий запит" required maxlength="200"><button>Знайти</button></div><div class="controls"><label>Ранжування <select name="scorer"><option value="bm25" {% if scorer == 'bm25' %}selected{% endif %}>BM25</option><option value="tfidf" {% if scorer == 'tfidf' %}selected{% endif %}>TF-IDF</option></select></label><label>На сторінці <input type="number" name="k" value="{{ k }}" min="1" max="100"></label></div></form>
+</section>
+{% if error %}<p class="notice">{{ error }}</p>{% endif %}
+{% if results %}<section class="results"><div class="summary"><strong>{{ results.total }} документів</strong><span>{{ results.took_ms }} мс · {{ results.scorer|upper }}</span></div>
+{% for hit in results.results %}<article><div class="score">SCORE {{ '%.4f'|format(hit.score) }}</div><h2><a href="/doc/{{ hit.doc_id }}">{{ hit.title }}</a></h2><div class="path">{{ hit.path }}</div><p class="snippet">{% for piece in hit.snippet.split('[[') %}{% if loop.first %}{{ piece }}{% elif ']]' in piece %}<mark>{{ piece.split(']]', 1)[0] }}</mark>{{ piece.split(']]', 1)[1] }}{% else %}{{ piece }}{% endif %}{% endfor %}</p></article>{% else %}<p>Нічого не знайдено на цій сторінці.</p>{% endfor %}
+<div class="pagination">{% if results.page > 1 %}<a href="/?q={{ q|urlencode }}&amp;k={{ k }}&amp;scorer={{ scorer }}&amp;page={{ results.page-1 }}">← Попередня</a>{% endif %}<span>Сторінка {{ results.page }}</span>{% if results.page*k < results.total %}<a href="/?q={{ q|urlencode }}&amp;k={{ k }}&amp;scorer={{ scorer }}&amp;page={{ results.page+1 }}">Наступна →</a>{% endif %}</div></section>
+{% else %}<section class="examples"><h2>Спробуй запит</h2><a href="/?q=asyncio">asyncio</a><a href="/?q=python%20AND%20module">python AND module</a><a href="/?q=%22event%20loop%22">"event loop"</a></section>{% endif %}
+</main><footer>findex 0.7.0 · Навчальна пошукова система · Документація Python 3.13</footer></body></html>

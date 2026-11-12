@@ -205,6 +205,27 @@ def _total_frequency(postings: PostingList) -> int:
     return sum(item.tf for item in postings)
 
 
+@app.command("serve")
+def serve_command(
+    port: Annotated[int | None, typer.Option("--port", min=1, max=65535)] = None,
+    workers: Annotated[int | None, typer.Option("--workers", min=1)] = None,
+    host: Annotated[str | None, typer.Option("--host")] = None,
+) -> None:
+    """Run the FastAPI web search server."""
+    import uvicorn
+
+    from findex.web import Settings
+
+    settings = Settings()
+    uvicorn.run(
+        "findex.web:app",
+        host=host or settings.host,
+        port=port or settings.port,
+        workers=workers or settings.workers,
+        log_level=settings.log_level,
+    )
+
+
 @app.command("stats")
 def stats_command(
     index: Annotated[Path, typer.Argument(help="Trusted index (.bin or .json).")],
