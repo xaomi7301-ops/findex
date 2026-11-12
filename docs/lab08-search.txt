@@ -1,0 +1,93 @@
+Thu Nov 12 12:32:46 2026    data\lab08\search.prof
+
+         2841452 function calls (2834158 primitive calls) in 1.854 seconds
+
+   Ordered by: internal time
+   List reduced from 2435 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+   314711    0.591    0.000    0.766    0.000 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\dataclasses.py:1357(fields)
+   314654    0.337    0.000    1.102    0.000 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\dataclasses.py:1194(_dataclass_setstate)
+        1    0.245    0.245    1.347    1.347 {built-in method _pickle.load}
+  1258293    0.112    0.000    0.112    0.000 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\dataclasses.py:1372(<genexpr>)
+      231    0.102    0.000    0.102    0.000 {built-in method _io.open_code}
+       14    0.058    0.004    0.058    0.004 {method 'clear' of 'dict' objects}
+   314872    0.036    0.000    0.036    0.000 {method 'values' of 'dict' objects}
+     1028    0.031    0.000    0.031    0.000 {built-in method nt.stat}
+   322003    0.028    0.000    0.028    0.000 {built-in method builtins.getattr}
+       11    0.024    0.002    0.024    0.002 {built-in method _io.open}
+      231    0.024    0.000    0.024    0.000 {built-in method marshal.loads}
+    340/1    0.021    0.000    1.855    1.855 {built-in method builtins.exec}
+       14    0.014    0.001    0.014    0.001 {built-in method _imp.create_dynamic}
+      231    0.011    0.000    0.011    0.000 {method 'read' of '_io.BufferedReader' objects}
+     2210    0.010    0.000    0.015    0.000 <frozen importlib._bootstrap_external>:101(_path_join)
+  810/806    0.008    0.000    0.047    0.000 {built-in method builtins.__build_class__}
+      846    0.008    0.000    0.008    0.000 {built-in method builtins.compile}
+    40254    0.005    0.000    0.005    0.000 {built-in method builtins.isinstance}
+      231    0.005    0.000    0.029    0.000 <frozen importlib._bootstrap_external>:779(_compile_bytecode)
+     1579    0.003    0.000    0.015    0.000 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\typing.py:173(_type_check)
+
+
+Thu Nov 12 12:32:46 2026    data\lab08\search.prof
+
+         2841452 function calls (2834158 primitive calls) in 1.854 seconds
+
+   Ordered by: cumulative time
+   List reduced from 2435 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    340/1    0.021    0.000    1.855    1.855 {built-in method builtins.exec}
+        1    0.000    0.000    1.855    1.855 <frozen runpy>:206(run_module)
+        1    0.000    0.000    1.853    1.853 <frozen runpy>:65(_run_code)
+        1    0.000    0.000    1.853    1.853 C:\Bag\findex\src\findex\cli.py:1(<module>)
+        1    0.000    0.000    1.632    1.632 C:\Bag\findex\.venv\Lib\site-packages\typer\main.py:1122(__call__)
+        1    0.000    0.000    1.619    1.619 C:\Bag\findex\.venv\Lib\site-packages\typer\_click\core.py:807(__call__)
+        1    0.000    0.000    1.619    1.619 C:\Bag\findex\.venv\Lib\site-packages\typer\core.py:1296(main)
+        1    0.000    0.000    1.619    1.619 C:\Bag\findex\.venv\Lib\site-packages\typer\core.py:303(_main)
+        1    0.000    0.000    1.481    1.481 C:\Bag\findex\.venv\Lib\site-packages\typer\core.py:1196(invoke)
+        2    0.000    0.000    1.478    0.739 C:\Bag\findex\.venv\Lib\site-packages\typer\_click\core.py:736(invoke)
+        2    0.000    0.000    1.478    0.739 C:\Bag\findex\.venv\Lib\site-packages\typer\_click\core.py:475(invoke)
+        2    0.000    0.000    1.478    0.739 C:\Bag\findex\.venv\Lib\site-packages\typer\main.py:1437(wrapper)
+        1    0.000    0.000    1.477    1.477 C:\Bag\findex\src\findex\cli.py:161(search_command)
+      255    0.000    0.000    1.430    0.006 {built-in method builtins.next}
+        2    0.000    0.000    1.429    0.715 C:\Bag\findex\src\findex\object_model.py:156(open_index)
+        2    0.000    0.000    1.378    0.689 C:\Bag\findex\src\findex\timing.py:16(wrapped)
+       28    0.000    0.000    1.371    0.049 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\contextlib.py:136(__enter__)
+        1    0.000    0.000    1.371    1.371 C:\Bag\findex\src\findex\object_model.py:150(load_ranked_index)
+        1    0.000    0.000    1.370    1.370 C:\Bag\findex\src\findex\store.py:61(load)
+        1    0.245    0.245    1.347    1.347 {built-in method _pickle.load}
+
+
+
+Project functions by self time:
+Thu Nov 12 12:32:46 2026    data\lab08\search.prof
+
+         2841452 function calls (2834158 primitive calls) in 1.854 seconds
+
+   Ordered by: internal time
+   List reduced from 2435 to 78 due to restriction <'[/\\\\\\\\]src[/\\\\\\\\]findex[/\\\\\\\\]'>
+   List reduced from 78 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      610    0.001    0.000    0.002    0.000 C:\Bag\findex\src\findex\ranking.py:51(score)
+      640    0.001    0.000    0.001    0.000 C:\Bag\findex\src\findex\object_model.py:98(df)
+        1    0.000    0.000    0.007    0.007 C:\Bag\findex\src\findex\ranking.py:129(ranked_search)
+     1222    0.000    0.000    0.001    0.000 C:\Bag\findex\src\findex\object_model.py:67(num_docs)
+       10    0.000    0.000    0.004    0.000 C:\Bag\findex\src\findex\ranking.py:83(snippet_for)
+     2510    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\object_model.py:42(_ensure_open)
+      610    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\object_model.py:94(doc_length)
+        1    0.000    0.000    1.853    1.853 C:\Bag\findex\src\findex\cli.py:1(<module>)
+        1    0.000    0.000    1.477    1.477 C:\Bag\findex\src\findex\cli.py:161(search_command)
+        2    0.000    0.000    1.378    0.689 C:\Bag\findex\src\findex\timing.py:16(wrapped)
+        1    0.000    0.000    1.371    1.371 C:\Bag\findex\src\findex\object_model.py:150(load_ranked_index)
+        3    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\index.py:73(posting_doc_ids)
+        2    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\query.py:133(_lex)
+        1    0.000    0.000    1.370    1.370 C:\Bag\findex\src\findex\store.py:61(load)
+        1    0.000    0.000    0.028    0.028 C:\Bag\findex\src\findex\parallel.py:1(<module>)
+        1    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\object_model.py:29(__init__)
+        1    0.000    0.000    0.007    0.007 C:\Bag\findex\src\findex\index.py:1(<module>)
+        1    0.000    0.000    0.059    0.059 C:\Bag\findex\src\findex\object_model.py:121(close)
+        3    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\query.py:53(evaluate)
+      441    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\ranking.py:166(<lambda>)
+
+

@@ -1,0 +1,93 @@
+Thu Nov 12 12:32:44 2026    data\lab08\index.prof
+
+         11387038 function calls (11353758 primitive calls) in 12.666 seconds
+
+   Ordered by: internal time
+   List reduced from 2608 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+      515    4.800    0.009    4.803    0.009 {built-in method _io.open}
+    90/89    1.270    0.014   28.849    0.324 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\threading.py:641(wait)
+  1921707    1.005    0.000    1.730    0.000 C:\Bag\findex\src\findex\tokenize.py:22(tokenize)
+        1    0.680    0.680    1.686    1.686 {built-in method _pickle.dump}
+     1692    0.516    0.000    0.516    0.000 {method 'translate' of 'str' objects}
+  363/357    0.495    0.001    2.007    0.006 {method 'acquire' of '_thread.lock' objects}
+   314711    0.481    0.000    0.652    0.000 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\dataclasses.py:1357(fields)
+    90/89    0.411    0.005   14.252    0.160 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\threading.py:327(wait)
+  2273568    0.309    0.000    0.309    0.000 {method 'append' of 'list' objects}
+  1922230    0.282    0.000    0.282    0.000 {method 'group' of 're.Match' objects}
+   314654    0.231    0.000    1.006    0.000 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\dataclasses.py:1190(_dataclass_getstate)
+   355395    0.228    0.000    0.394    0.000 C:\Bag\findex\src\findex\parallel.py:189(<genexpr>)
+       14    0.211    0.015    0.211    0.015 {built-in method _imp.create_dynamic}
+1274314/1274312    0.154    0.000    0.154    0.000 {built-in method builtins.getattr}
+        2    0.150    0.075   12.336    6.168 C:\Bag\findex\.venv\Lib\site-packages\typer\main.py:1437(wrapper)
+      237    0.138    0.001    0.138    0.001 {built-in method _io.open_code}
+  1258293    0.109    0.000    0.109    0.000 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\dataclasses.py:1372(<genexpr>)
+     2086    0.073    0.000    0.073    0.000 {built-in method nt.stat}
+     1028    0.063    0.000    0.063    0.000 {built-in method unicodedata.normalize}
+      514    0.062    0.000    0.062    0.000 {method 'casefold' of 'str' objects}
+
+
+Thu Nov 12 12:32:44 2026    data\lab08\index.prof
+
+         11387038 function calls (11353758 primitive calls) in 12.666 seconds
+
+   Ordered by: cumulative time
+   List reduced from 2608 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+    90/89    1.270    0.014   28.849    0.324 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\threading.py:641(wait)
+    90/89    0.411    0.005   14.252    0.160 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\threading.py:327(wait)
+    346/1    0.023    0.000   13.019   13.019 {built-in method builtins.exec}
+        1    0.000    0.000   13.019   13.019 <frozen runpy>:206(run_module)
+        1    0.000    0.000   13.017   13.017 <frozen runpy>:65(_run_code)
+        1    0.000    0.000   13.017   13.017 C:\Bag\findex\src\findex\cli.py:1(<module>)
+        1    0.000    0.000   12.726   12.726 C:\Bag\findex\.venv\Lib\site-packages\typer\main.py:1122(__call__)
+        1    0.000    0.000   12.715   12.715 C:\Bag\findex\.venv\Lib\site-packages\typer\_click\core.py:807(__call__)
+        1    0.000    0.000   12.715   12.715 C:\Bag\findex\.venv\Lib\site-packages\typer\core.py:1296(main)
+        1    0.000    0.000   12.715   12.715 C:\Bag\findex\.venv\Lib\site-packages\typer\core.py:303(_main)
+        1    0.000    0.000   12.339   12.339 C:\Bag\findex\.venv\Lib\site-packages\typer\core.py:1196(invoke)
+        2    0.000    0.000   12.336    6.168 C:\Bag\findex\.venv\Lib\site-packages\typer\_click\core.py:736(invoke)
+        2    0.000    0.000   12.336    6.168 C:\Bag\findex\.venv\Lib\site-packages\typer\_click\core.py:475(invoke)
+        2    0.150    0.075   12.336    6.168 C:\Bag\findex\.venv\Lib\site-packages\typer\main.py:1437(wrapper)
+        1    0.000    0.000   12.185   12.185 C:\Bag\findex\src\findex\cli.py:71(index_command)
+        1    0.000    0.000   10.481   10.481 C:\Bag\findex\.venv\Lib\site-packages\rich\progress.py:1184(__exit__)
+        1    0.000    0.000   10.481   10.481 C:\Bag\findex\.venv\Lib\site-packages\rich\progress.py:1173(stop)
+        1    0.000    0.000   10.481   10.481 C:\Bag\findex\.venv\Lib\site-packages\rich\live.py:145(stop)
+       91    0.002    0.000    7.314    0.080 C:\Bag\findex\.venv\Lib\site-packages\rich\live.py:244(refresh)
+      515    0.002    0.000    4.806    0.009 C:\Users\kalinichenko.oo\AppData\Roaming\uv\python\cpython-3.13-windows-x86_64-none\Lib\pathlib\_local.py:529(open)
+
+
+
+Project functions by self time:
+Thu Nov 12 12:32:44 2026    data\lab08\index.prof
+
+         11387038 function calls (11353758 primitive calls) in 12.666 seconds
+
+   Ordered by: internal time
+   List reduced from 2608 to 56 due to restriction <'[/\\\\\\\\]src[/\\\\\\\\]findex[/\\\\\\\\]'>
+   List reduced from 56 to 20 due to restriction <20>
+
+   ncalls  tottime  percall  cumtime  percall filename:lineno(function)
+  1921707    1.005    0.000    1.730    0.000 C:\Bag\findex\src\findex\tokenize.py:22(tokenize)
+   355395    0.228    0.000    0.394    0.000 C:\Bag\findex\src\findex\parallel.py:189(<genexpr>)
+        1    0.024    0.024    0.048    0.048 C:\Bag\findex\src\findex\parallel.py:107(build_partial)
+   314140    0.016    0.000    0.016    0.000 C:\Bag\findex\src\findex\parallel.py:191(<lambda>)
+        1    0.016    0.016    0.100    0.100 C:\Bag\findex\src\findex\parallel.py:154(merge)
+     1028    0.002    0.000    0.002    0.000 C:\Bag\findex\src\findex\parallel.py:137(<genexpr>)
+        1    0.002    0.002    0.077    0.077 C:\Bag\findex\src\findex\parallel.py:64(document_paths)
+      515    0.001    0.000    0.038    0.000 C:\Bag\findex\src\findex\parallel.py:70(<genexpr>)
+        1    0.000    0.000   12.185   12.185 C:\Bag\findex\src\findex\cli.py:71(index_command)
+        1    0.000    0.000   13.017   13.017 C:\Bag\findex\src\findex\cli.py:1(<module>)
+        1    0.000    0.000    0.010    0.010 C:\Bag\findex\src\findex\index.py:1(<module>)
+        1    0.000    0.000    0.076    0.076 C:\Bag\findex\src\findex\parallel.py:1(<module>)
+        1    0.000    0.000    0.100    0.100 C:\Bag\findex\src\findex\parallel.py:197(build_parallel_index)
+        1    0.000    0.000    0.005    0.005 C:\Bag\findex\src\findex\ranking.py:1(<module>)
+        1    0.000    0.000    1.687    1.687 C:\Bag\findex\src\findex\store.py:27(save)
+        1    0.000    0.000    0.003    0.003 C:\Bag\findex\src\findex\query.py:1(<module>)
+        1    0.000    0.000    0.001    0.001 C:\Bag\findex\src\findex\object_model.py:1(<module>)
+        1    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\parallel.py:87(make_tasks)
+        1    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\corpus.py:1(<module>)
+        1    0.000    0.000    0.000    0.000 C:\Bag\findex\src\findex\object_model.py:22(Index)
+
+
