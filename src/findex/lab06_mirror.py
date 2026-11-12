@@ -104,7 +104,7 @@ def make_pages(root: Path, count: int = 200) -> list[str]:
 
 
 @contextmanager
-def mirror(pages: list[str], port: int, latency: float) -> Generator[MirrorServer, None, None]:
+def mirror(pages: list[str], port: int, latency: float) -> Generator[MirrorServer]:
     server = MirrorServer(port, pages, latency)
     thread = Thread(target=server.serve_forever, daemon=True)
     thread.start()
