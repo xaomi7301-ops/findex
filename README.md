@@ -47,8 +47,12 @@ docker run --rm -p 8000:8000 -e INDEX_PATH=/app/data/index.bin -e CORPUS_PATH=/a
 ```
 
 Docker створює індекс і ембединги у builder-етапі, runtime non-root.
-На Windows Docker Desktop сторінка 1.0.0 та /health успішно відкрилися;
-перевірка результатів пошуку в контейнері та публічний rollout ще тривають.
+На Windows Docker Desktop сторінка 1.0.0 та /health успішно відкрилися.
+Гібридний запит `how to run several tasks at the same time` у Docker повернув
+514 документів-кандидатів, HTTP 200, внутрішній took_ms 12.408 мс (один запит).
+Перші результати: Thread-based parallelism, Coroutines and tasks,
+Process-based parallelism. На Windows CLI перші два місця відрізнялися;
+точну причину різниці не встановлено. Публічний rollout ще не перевірено.
 
 ## Архітектура
 
