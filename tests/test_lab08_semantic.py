@@ -1,4 +1,5 @@
 """Semantic retrieval tests use a deterministic fake encoder, no network/model."""
+
 from __future__ import annotations
 
 import numpy as np
@@ -18,7 +19,8 @@ class FakeEncoder:
 
 def test_chunk_overlap():
     assert list(chunks("one two three four five", size=3, overlap=1)) == [
-        "one two three", "three four five"
+        "one two three",
+        "three four five",
     ]
 
 

@@ -1,4 +1,5 @@
 """MiniLM semantic retrieval, document-best chunk scoring and RRF."""
+
 from __future__ import annotations
 
 import hashlib
@@ -104,7 +105,7 @@ class MiniLM:
         # The native extension APIs are wrapped by narrow typed protocols.
         ort = cast(_ORT, importlib.import_module("onnxruntime"))
         factory = cast(
-            _TokenizerFactory, getattr(importlib.import_module("tokenizers"), "Tokenizer")
+            _TokenizerFactory, importlib.import_module("tokenizers").Tokenizer
         )
         options = ort.SessionOptions()
         options.intra_op_num_threads = threads
@@ -280,8 +281,11 @@ class SemanticSearch:
             ranked = [(doc_id, best[doc_id][0]) for doc_id in semantic]
         return [
             SearchResult(
-                doc_id=doc_id, score=score, title=index.doc_meta[doc_id].title,
-                path=index.doc_meta[doc_id].path, snippet=self.data.excerpts[best[doc_id][1]],
+                doc_id=doc_id,
+                score=score,
+                title=index.doc_meta[doc_id].title,
+                path=index.doc_meta[doc_id].path,
+                snippet=self.data.excerpts[best[doc_id][1]],
             )
             for doc_id, score in ranked[:k]
         ]

@@ -237,7 +237,9 @@ def embed_command(
             result = build_embeddings(
                 ix, corpus, out, MiniLM(model_dir, threads=threads), batch_size=batch_size
             )
-        typer.echo(f"Saved {result.matrix.shape[0]} chunks, {result.matrix.shape[1]} dimensions: {out}")
+        typer.echo(
+            f"Saved {result.matrix.shape[0]} chunks, {result.matrix.shape[1]} dimensions: {out}"
+        )
     except (OSError, ValueError, EOFError, ImportError) as exc:
         _fail(exc)
 
