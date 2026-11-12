@@ -5,7 +5,7 @@ from __future__ import annotations
 import asyncio
 import logging
 import time
-from collections.abc import AsyncIterator, Awaitable, Callable
+from collections.abc import AsyncGenerator, Awaitable, Callable
 from contextlib import asynccontextmanager
 from pathlib import Path
 from typing import Annotated, Literal, cast
@@ -32,8 +32,8 @@ class Settings(BaseSettings):
     index_path: Path = Path("index-lab07.bin")
     corpus_path: Path = Path("data/python_docs")
     host: str = "127.0.0.1"
-    port: int = Field(8000, ge=1, le=65535)
-    workers: int = Field(1, ge=1)
+    port: Annotated[int, Field(ge=1, le=65535)] = 8000
+    workers: Annotated[int, Field(ge=1)] = 1
     log_level: Literal["debug", "info", "warning", "error", "critical"] = "info"
     # Only for controlled benchmark: async-direct deliberately blocks the loop.
     search_mode: Literal["sync", "async-direct"] = "sync"
@@ -152,7 +152,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
     config = settings or Settings()
 
     @asynccontextmanager
-    async def lifespan(application: FastAPI) -> AsyncIterator[None]:
+    async def lifespan(application: FastAPI) -> AsyncGenerator[None]:
         application.state.index = None
         application.state.started = time.monotonic()
         try:
@@ -166,7 +166,7 @@ def create_app(settings: Settings | None = None) -> FastAPI:
         try:
             yield
         finally:
-            index = cast(Index | None, application.state.index)
+            index = application.state.index
             if index is not None:
                 index.close()
             application.state.index = None
