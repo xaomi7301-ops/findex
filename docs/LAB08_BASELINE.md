@@ -29,9 +29,9 @@ before changing the production code.
 
 | Function / line | Self / cumulative seconds | Python / native / system CPU | Hypothesis |
 |---|---:|---|---|
-| Index: _io.open | 4.800 / 4.803 | Pending Scalene; file I/O/native candidate | File opens may dominate cold CLI build; NumPy will not directly fix I/O. |
-| Index: tokenize.py:22 tokenize | 1.005 / 1.730 | Pending Scalene; Python generator and native regex/Unicode operations | Millions of generator calls and per-token object operations may cost time; measure before changing tokenization. |
-| Search: dataclasses.fields | 0.591 / 0.766 | Pending Scalene; Python metadata work during deserialization | Avoid rebuilding Python posting objects in the hot search path; reuse loaded index and compact numeric representation. |
+| Index: _io.open | 4.800 / 4.803 | Scalene pathlib._local.py:537: 0.01% Python / 3.63% native / 0.98% system | File opens may dominate cold CLI build; NumPy will not directly fix I/O. |
+| Index: tokenize.py:22 tokenize | 1.005 / 1.730 | Scalene tokenize.py:30: 0.57% Python / 1.79% native / 0.12% system | Millions of generator calls and per-token object operations may cost time; measure before changing tokenization. |
+| Search: dataclasses.fields | 0.591 / 0.766 | Scalene dataclasses.py:1372: 0.31% Python / 2.58% native / 0.74% system | Avoid rebuilding Python posting objects in the hot search path; reuse loaded index and compact numeric representation. |
 
 Windows, AMD Ryzen 5 7430U (6 physical / 12 logical cores), Python 3.13.
 514 documents, 1,921,193 tokens, 41,255 terms, positional pickle 12,034,472 bytes.
@@ -47,10 +47,16 @@ overlapping/nested wait timings, not additive elapsed time. Rich progress
 and synchronization can affect the full CLI profile. `_pickle.load` includes
 the dataclass work, so these numbers must not be added together.
 
-py-spy index flame graph: 459 samples, 0 errors, 100 Hz sampling. Search
-sampling was started; confirm the final SVG and sample count locally.
-Scalene Python/native/system breakdown is still pending; do not present
-the hypotheses as measured percentages. The later scorer benchmark will
+py-spy index flame graph: 459 samples, 0 errors, 100 Hz sampling. Both index and search flame SVGs were committed in c2215ce.
+Scalene elapsed: index 6.749 s, search 1.469 s. Percentages in the
+table are sampled attribution at individual lines, not percentages within
+a function or additive cProfile elapsed times. Search store.py:68
+pickle.load: 0.00% Python / 9.42% native / 1.43% system. The dominant
+threading.py:995 call is attributed 12.40% Python / 49.59% native /
+12.72% system (index), 13.71% / 54.84% / 15.28% (search); this is a
+thread/progress attribution, not a ranking kernel. Scalene has little
+resolution for the very short scorer in a single CLI invocation.
+A warmed scorer-only benchmark is therefore the right experiment. The later scorer benchmark will
 isolate scoring with a loaded index and warm repeated calls, and compare
 identical rankings, not promise an end-to-end CLI speedup.
 
