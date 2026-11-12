@@ -20,7 +20,7 @@ from rich.console import Console
 from rich.progress import BarColumn, Progress, SpinnerColumn, TextColumn
 from rich.table import Table
 
-from findex.index import PostingList
+from findex.index import PostingList, build_index
 from findex.object_model import open_index
 from findex.parallel import build_parallel_index
 from findex.ranking import BM25, Scorer, TfIdf, ranked_search
@@ -70,7 +70,7 @@ def _configure(
 
 @app.command("index")
 def index_command(
-    corpus: Annotated[Path, typer.Argument(help="Directory with UTF-8 .txt files.")],
+    corpus: Annotated[Path, typer.Argument(help="Directory of .txt files or a crawl .jsonl file.")],
     out: Annotated[Path, typer.Option("--out", help="Pickle or .json index.")] = Path("index.bin"),
     positions: Annotated[bool, typer.Option("--positions")] = False,
     limit: Annotated[int | None, typer.Option("--limit", min=0)] = None,
@@ -100,6 +100,14 @@ def index_command(
             def report_count(count: int) -> None:
                 progress.update(task, completed=count)
 
+            if corpus.suffix.lower() == ".jsonl" and corpus.is_file():
+                # Streaming JSONL is indexed synchronously, outside the crawler event loop.
+                raw = build_index(
+                    corpus, with_positions=positions, limit=limit, on_document=report_count
+                )
+                save(raw, out)
+                typer.echo(f"Indexed {raw.document_count:,} documents; saved {out}.")
+                return
             built = build_parallel_index(
                 corpus,
                 executor=executor.value,
@@ -117,6 +125,30 @@ def index_command(
             f"merge={built.merge_seconds:.3f}s."
         )
     except (OSError, ValueError, EOFError) as exc:
+        _fail(exc)
+
+
+@app.command("crawl")
+def crawl_command(
+    seed: Annotated[str, typer.Argument(help="Allowed HTTP(S) seed URL.")],
+    max_pages: Annotated[int, typer.Option("--max-pages", min=1)] = 500,
+    concurrency: Annotated[int, typer.Option("--concurrency", min=1)] = 10,
+    per_host: Annotated[int, typer.Option("--per-host", min=1)] = 2,
+    delay: Annotated[float, typer.Option("--delay", min=0)] = 0.1,
+    out: Annotated[Path, typer.Option("--out")] = Path("data/crawl.jsonl"),
+    log: Annotated[Path, typer.Option("--log")] = Path("crawl.log"),
+    debug: Annotated[bool, typer.Option("--debug")] = False,
+) -> None:
+    """Crawl an authorized site, streaming JSONL and live counters."""
+    from findex.crawl_runner import run_crawl
+
+    try:
+        result = run_crawl(
+            seed, out=out, log=log, max_pages=max_pages, concurrency=concurrency,
+            per_host=per_host, delay=delay, debug=debug,
+        )
+        typer.echo(json.dumps(asdict(result), ensure_ascii=False))
+    except (OSError, ValueError) as exc:
         _fail(exc)
 
 
