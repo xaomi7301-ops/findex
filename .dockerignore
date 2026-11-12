@@ -8,3 +8,6 @@ __pycache__
 .env
 *.bin
 dist
+
+# Profiling reports are not required in the runtime image.
+docs

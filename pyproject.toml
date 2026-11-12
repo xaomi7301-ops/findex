@@ -1,7 +1,7 @@
 [project]
 name = "findex"
-version = "0.7.0"
-description = "Installable Python full-text search engine with Boolean queries and BM25/TF-IDF ranking"
+version = "1.0.0"
+description = "Python lexical, semantic and hybrid search with NumPy ranking, MiniLM and FastAPI"
 readme = "README.md"
 requires-python = ">=3.13"
 authors = [{name = "Oleksandr Kalinichenko"}]

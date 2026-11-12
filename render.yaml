@@ -9,6 +9,12 @@ services:
         value: /app/data/index.bin
       - key: CORPUS_PATH
         value: /app/data/python_docs
+      - key: EMBEDDINGS_PATH
+        value: /app/data/lab08/embeddings
+      - key: MODEL_DIR
+        value: /app/data/lab08/model
+      - key: EMBEDDING_THREADS
+        value: "2"
       - key: HOST
         value: 0.0.0.0
       - key: SEARCH_MODE

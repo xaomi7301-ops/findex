@@ -34,7 +34,39 @@ natural-language text, not strict Boolean filters. Chunk windows contain
 Windows and x86-64 AVX2 Linux are the intended targets. The model is
 downloaded once to data/lab08/model, with the ONNX checksum verified.
 
-First run the fake-encoder tests, then build actual embeddings and measure
-the 15 labeled queries. Public Render deployment and resource usage are
-not yet verified. Model, matrix and excerpts are generated files, not
-committed to Git. Do not report semantic precision before measuring.
+Actual Windows run: 514 documents, 18,301 chunks, 384 float32 dimensions.
+The matrix alone contains 28,110,336 bytes (about 26.81 MiB); metadata,
+model and lexical index add memory. All three CLI modes ran successfully.
+After adding API tests and correcting Pyright narrowing in lifespan:
+207 tests passed in 6.99 s, Ruff passed, Pyright strict reported 0 errors.
+
+## Measured precision@5
+
+| Query group | BM25 AND | BM25 OR | Semantic | Hybrid RRF |
+|---|---:|---:|---:|---:|
+| Lab 03 (10) | 0.22 | 0.22 | 0.24 | 0.24 |
+| Zero-overlap paraphrases (5) | 0.00 | 0.00 | 0.04 | 0.04 |
+| All (15) | 0.1467 | 0.1467 | 0.1733 | 0.1733 |
+
+The evaluator verifies zero token overlap with the labeled target before
+retrieval. Only `tallying multiplicities` reached its target in the top five
+for semantic/hybrid among the five paraphrases; the other four failed.
+The improvement on this small label set is modest (13 versus 11 labeled
+hits across 75 top-five slots). RRF ties semantic mean P@5, so no claim
+that hybrid is universally superior is warranted. The labels are sparse;
+relevant but unlabeled documents do not count. The zero-overlap condition
+is deliberately hard and produces unnatural phrases.
+For `how to run several tasks at the same time`, Coroutines and tasks was
+rank 4 by semantic, rank 1 by hybrid and absent from lexical top five.
+Raw per-query rankings: benchmarks/lab08-precision.json.
+
+## Deployment preparation
+
+Docker regenerates the official documentation, positional index and
+MiniLM vectors in its builder stage. The runtime reads all assets from
+/app/data; it remains non-root, with one web worker and two encoder threads.
+The model and embeddings are not committed to Git. The mutable Python
+documentation archive can change between builds; verify corpus counts.
+The Windows server has started successfully; browser/API smoke tests,
+Linux image build, memory usage and the public v1.0.0 rollout still need
+actual verification. Lab 07 public p95 is historical, not a v1.0.0 metric.
