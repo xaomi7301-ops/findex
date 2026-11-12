@@ -1,4 +1,5 @@
 """Measure P@5 on ten Lab 03 labels and five verified zero-overlap paraphrases."""
+
 from __future__ import annotations
 
 import argparse
@@ -21,7 +22,9 @@ def main() -> None:
     parser.add_argument("--out", type=Path, default=Path("benchmarks/lab08-precision.json"))
     args = parser.parse_args()
     originals = json.loads(Path("benchmarks/lab03-labels.json").read_text("utf-8"))["queries"]
-    paraphrases = json.loads(Path("benchmarks/lab08-paraphrases.json").read_text("utf-8"))["queries"]
+    paraphrases = json.loads(Path("benchmarks/lab08-paraphrases.json").read_text("utf-8"))[
+        "queries"
+    ]
     rows = []
     with open_index(args.index) as index:
         semantic = SemanticSearch(SemanticData.load(args.embeddings, index), MiniLM(args.model_dir))
@@ -34,7 +37,8 @@ def main() -> None:
             for candidate in entry["candidates"]:
                 terms = tuple(dict.fromkeys(tokenize(candidate)))
                 overlap = [
-                    term for term in terms
+                    term
+                    for term in terms
                     if targets.intersection(map(int, numeric.postings(term)[0]))
                 ]
                 if not overlap:
@@ -59,17 +63,22 @@ def main() -> None:
                 "hybrid": [hit.path for hit in hybrid_hits],
             }
             row = {
-                "query": query, "group": group, "relevant_paths": relevant,
+                "query": query,
+                "group": group,
+                "relevant_paths": relevant,
                 "zero_overlap_verified": group == "paraphrase",
-                "p_at_5": {mode: len(set(top) & set(relevant)) / 5 for mode, top in rankings.items()},
+                "p_at_5": {
+                    mode: len(set(top) & set(relevant)) / 5 for mode, top in rankings.items()
+                },
                 "top5": rankings,
             }
             rows.append(row)
             print(json.dumps(row["p_at_5"]), query, flush=True)
     means = {
         group: {
-            mode: statistics.mean(row["p_at_5"][mode] for row in rows
-                                  if group == "all" or row["group"] == group)
+            mode: statistics.mean(
+                row["p_at_5"][mode] for row in rows if group == "all" or row["group"] == group
+            )
             for mode in ("bm25_and", "bm25_or", "semantic", "hybrid")
         }
         for group in ("lab03", "paraphrase", "all")

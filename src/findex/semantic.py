@@ -104,9 +104,7 @@ class MiniLM:
         tokenizer = _download(model_dir, "tokenizer.json", "tokenizer.json")
         # The native extension APIs are wrapped by narrow typed protocols.
         ort = cast(_ORT, importlib.import_module("onnxruntime"))
-        factory = cast(
-            _TokenizerFactory, importlib.import_module("tokenizers").Tokenizer
-        )
+        factory = cast(_TokenizerFactory, importlib.import_module("tokenizers").Tokenizer)
         options = ort.SessionOptions()
         options.intra_op_num_threads = threads
         options.inter_op_num_threads = 1

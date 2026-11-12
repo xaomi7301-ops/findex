@@ -1,4 +1,5 @@
 """Lab 08 web modes use in-memory fake embeddings, never the live model."""
+
 from pathlib import Path
 
 import numpy as np
@@ -6,7 +7,7 @@ from fastapi.testclient import TestClient
 
 from findex.object_model import build_ranked_index
 from findex.semantic import SemanticSearch, build_embeddings
-from findex.web import Settings, SemanticRuntime, create_app, get_index, get_semantic
+from findex.web import SemanticRuntime, Settings, create_app, get_index, get_semantic
 
 
 class FakeEncoder:

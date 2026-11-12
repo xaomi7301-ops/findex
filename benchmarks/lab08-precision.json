@@ -1,0 +1,646 @@
+{
+  "rows": [
+    {
+      "query": "asyncio tasks",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/asyncio-task.txt",
+        "library/asyncio-eventloop.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.2,
+        "bm25_or": 0.2,
+        "semantic": 0.2,
+        "hybrid": 0.2
+      },
+      "top5": {
+        "bm25_and": [
+          "library/asyncio-task.txt",
+          "library/asyncio-sync.txt",
+          "library/asyncio-queue.txt",
+          "library/asyncio-api-index.txt",
+          "howto/a-conceptual-overview-of-asyncio.txt"
+        ],
+        "bm25_or": [
+          "library/asyncio-task.txt",
+          "library/asyncio-sync.txt",
+          "library/asyncio-queue.txt",
+          "library/asyncio-api-index.txt",
+          "howto/a-conceptual-overview-of-asyncio.txt"
+        ],
+        "semantic": [
+          "howto/a-conceptual-overview-of-asyncio.txt",
+          "library/asyncio-extending.txt",
+          "library/asyncio.txt",
+          "library/asyncio-task.txt",
+          "whatsnew/3.8.txt"
+        ],
+        "hybrid": [
+          "library/asyncio-task.txt",
+          "howto/a-conceptual-overview-of-asyncio.txt",
+          "library/asyncio.txt",
+          "library/asyncio-extending.txt",
+          "library/asyncio-api-index.txt"
+        ]
+      }
+    },
+    {
+      "query": "regular expression",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/re.txt",
+        "howto/regex.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.4,
+        "bm25_or": 0.4,
+        "semantic": 0.4,
+        "hybrid": 0.4
+      },
+      "top5": {
+        "bm25_and": [
+          "library/re.txt",
+          "howto/regex.txt",
+          "library/text.txt",
+          "library/string.txt",
+          "reference/lexical_analysis.txt"
+        ],
+        "bm25_or": [
+          "library/re.txt",
+          "howto/regex.txt",
+          "library/text.txt",
+          "library/string.txt",
+          "reference/lexical_analysis.txt"
+        ],
+        "semantic": [
+          "library/re.txt",
+          "howto/regex.txt",
+          "reference/grammar.txt",
+          "library/string.txt",
+          "library/pathlib.txt"
+        ],
+        "hybrid": [
+          "library/re.txt",
+          "howto/regex.txt",
+          "library/string.txt",
+          "reference/lexical_analysis.txt",
+          "library/text.txt"
+        ]
+      }
+    },
+    {
+      "query": "json encoder",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/json.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.2,
+        "bm25_or": 0.2,
+        "semantic": 0.2,
+        "hybrid": 0.2
+      },
+      "top5": {
+        "bm25_and": [
+          "library/json.txt",
+          "library/netdata.txt",
+          "library/index.txt",
+          "howto/logging-cookbook.txt",
+          "library/struct.txt"
+        ],
+        "bm25_or": [
+          "library/json.txt",
+          "library/netdata.txt",
+          "library/index.txt",
+          "howto/logging-cookbook.txt",
+          "library/struct.txt"
+        ],
+        "semantic": [
+          "library/json.txt",
+          "whatsnew/2.6.txt",
+          "tutorial/inputoutput.txt",
+          "library/codecs.txt",
+          "library/struct.txt"
+        ],
+        "hybrid": [
+          "library/json.txt",
+          "library/codecs.txt",
+          "library/struct.txt",
+          "howto/logging-cookbook.txt",
+          "library/netdata.txt"
+        ]
+      }
+    },
+    {
+      "query": "pickle serialization",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/pickle.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.2,
+        "bm25_or": 0.2,
+        "semantic": 0.2,
+        "hybrid": 0.2
+      },
+      "top5": {
+        "bm25_and": [
+          "library/pickle.txt",
+          "library/persistence.txt",
+          "library/zoneinfo.txt",
+          "library/shelve.txt",
+          "library/index.txt"
+        ],
+        "bm25_or": [
+          "library/pickle.txt",
+          "library/persistence.txt",
+          "library/zoneinfo.txt",
+          "library/shelve.txt",
+          "library/index.txt"
+        ],
+        "semantic": [
+          "library/pickle.txt",
+          "whatsnew/3.4.txt",
+          "library/shelve.txt",
+          "tutorial/inputoutput.txt",
+          "contents.txt"
+        ],
+        "hybrid": [
+          "library/pickle.txt",
+          "library/shelve.txt",
+          "tutorial/inputoutput.txt",
+          "library/persistence.txt",
+          "contents.txt"
+        ]
+      }
+    },
+    {
+      "query": "pathlib paths",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/pathlib.txt",
+        "library/os.path.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.2,
+        "bm25_or": 0.2,
+        "semantic": 0.4,
+        "hybrid": 0.4
+      },
+      "top5": {
+        "bm25_and": [
+          "library/pathlib.txt",
+          "library/glob.txt",
+          "library/filesys.txt",
+          "library/compileall.txt",
+          "whatsnew/3.6.txt"
+        ],
+        "bm25_or": [
+          "library/pathlib.txt",
+          "library/glob.txt",
+          "library/filesys.txt",
+          "library/compileall.txt",
+          "whatsnew/3.6.txt"
+        ],
+        "semantic": [
+          "library/pathlib.txt",
+          "whatsnew/3.12.txt",
+          "library/os.path.txt",
+          "whatsnew/3.5.txt",
+          "whatsnew/3.6.txt"
+        ],
+        "hybrid": [
+          "library/pathlib.txt",
+          "whatsnew/3.6.txt",
+          "library/os.path.txt",
+          "whatsnew/3.12.txt",
+          "library/glob.txt"
+        ]
+      }
+    },
+    {
+      "query": "functools cache",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/functools.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.2,
+        "bm25_or": 0.2,
+        "semantic": 0.2,
+        "hybrid": 0.2
+      },
+      "top5": {
+        "bm25_and": [
+          "library/functools.txt",
+          "library/fnmatch.txt",
+          "whatsnew/3.2.txt",
+          "whatsnew/3.8.txt",
+          "whatsnew/3.4.txt"
+        ],
+        "bm25_or": [
+          "library/functools.txt",
+          "library/fnmatch.txt",
+          "whatsnew/3.2.txt",
+          "whatsnew/3.8.txt",
+          "whatsnew/3.4.txt"
+        ],
+        "semantic": [
+          "faq/programming.txt",
+          "library/functools.txt",
+          "whatsnew/changelog.txt",
+          "library/collections.txt",
+          "whatsnew/3.8.txt"
+        ],
+        "hybrid": [
+          "library/functools.txt",
+          "faq/programming.txt",
+          "whatsnew/3.8.txt",
+          "whatsnew/changelog.txt",
+          "library/collections.txt"
+        ]
+      }
+    },
+    {
+      "query": "threading lock",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/threading.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.2,
+        "bm25_or": 0.2,
+        "semantic": 0.2,
+        "hybrid": 0.2
+      },
+      "top5": {
+        "bm25_and": [
+          "library/threading.txt",
+          "library/multiprocessing.txt",
+          "howto/free-threading-python.txt",
+          "library/_thread.txt",
+          "howto/free-threading-extensions.txt"
+        ],
+        "bm25_or": [
+          "library/threading.txt",
+          "library/multiprocessing.txt",
+          "howto/free-threading-python.txt",
+          "library/_thread.txt",
+          "howto/free-threading-extensions.txt"
+        ],
+        "semantic": [
+          "glossary.txt",
+          "library/threading.txt",
+          "library/multiprocessing.txt",
+          "library/_thread.txt",
+          "c-api/init.txt"
+        ],
+        "hybrid": [
+          "library/threading.txt",
+          "library/multiprocessing.txt",
+          "library/_thread.txt",
+          "glossary.txt",
+          "c-api/init.txt"
+        ]
+      }
+    },
+    {
+      "query": "unittest mock",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/unittest.txt",
+        "library/unittest.mock.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.2,
+        "bm25_or": 0.2,
+        "semantic": 0.2,
+        "hybrid": 0.2
+      },
+      "top5": {
+        "bm25_and": [
+          "library/unittest.mock.txt",
+          "library/development.txt",
+          "library/unittest.mock-examples.txt",
+          "library/index.txt",
+          "contents.txt"
+        ],
+        "bm25_or": [
+          "library/unittest.mock.txt",
+          "library/development.txt",
+          "library/unittest.mock-examples.txt",
+          "library/index.txt",
+          "contents.txt"
+        ],
+        "semantic": [
+          "library/development.txt",
+          "contents.txt",
+          "library/unittest.mock-examples.txt",
+          "whatsnew/3.8.txt",
+          "library/unittest.txt"
+        ],
+        "hybrid": [
+          "library/development.txt",
+          "library/unittest.mock-examples.txt",
+          "library/unittest.mock.txt",
+          "contents.txt",
+          "whatsnew/3.8.txt"
+        ]
+      }
+    },
+    {
+      "query": "typing protocol",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/typing.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.2,
+        "bm25_or": 0.2,
+        "semantic": 0.2,
+        "hybrid": 0.2
+      },
+      "top5": {
+        "bm25_and": [
+          "library/typing.txt",
+          "deprecations/index.txt",
+          "deprecations/pending-removal-in-3.17.txt",
+          "whatsnew/3.12.txt",
+          "whatsnew/3.10.txt"
+        ],
+        "bm25_or": [
+          "library/typing.txt",
+          "deprecations/index.txt",
+          "deprecations/pending-removal-in-3.17.txt",
+          "whatsnew/3.12.txt",
+          "whatsnew/3.10.txt"
+        ],
+        "semantic": [
+          "library/typing.txt",
+          "whatsnew/3.13.txt",
+          "whatsnew/3.11.txt",
+          "extending/newtypes.txt",
+          "deprecations/index.txt"
+        ],
+        "hybrid": [
+          "library/typing.txt",
+          "deprecations/index.txt",
+          "whatsnew/3.13.txt",
+          "whatsnew/3.10.txt",
+          "whatsnew/3.11.txt"
+        ]
+      }
+    },
+    {
+      "query": "collections counter",
+      "group": "lab03",
+      "relevant_paths": [
+        "library/collections.txt"
+      ],
+      "zero_overlap_verified": false,
+      "p_at_5": {
+        "bm25_and": 0.2,
+        "bm25_or": 0.2,
+        "semantic": 0.2,
+        "hybrid": 0.2
+      },
+      "top5": {
+        "bm25_and": [
+          "library/collections.txt",
+          "library/datatypes.txt",
+          "whatsnew/3.1.txt",
+          "library/dis.txt",
+          "whatsnew/3.2.txt"
+        ],
+        "bm25_or": [
+          "library/collections.txt",
+          "library/datatypes.txt",
+          "whatsnew/3.1.txt",
+          "library/dis.txt",
+          "whatsnew/3.2.txt"
+        ],
+        "semantic": [
+          "library/collections.txt",
+          "whatsnew/3.2.txt",
+          "tutorial/controlflow.txt",
+          "whatsnew/3.1.txt",
+          "reference/datamodel.txt"
+        ],
+        "hybrid": [
+          "library/collections.txt",
+          "whatsnew/3.2.txt",
+          "whatsnew/3.1.txt",
+          "library/datatypes.txt",
+          "whatsnew/2.7.txt"
+        ]
+      }
+    },
+    {
+      "query": "juggling chores",
+      "group": "paraphrase",
+      "relevant_paths": [
+        "library/asyncio-task.txt"
+      ],
+      "zero_overlap_verified": true,
+      "p_at_5": {
+        "bm25_and": 0.0,
+        "bm25_or": 0.0,
+        "semantic": 0.0,
+        "hybrid": 0.0
+      },
+      "top5": {
+        "bm25_and": [],
+        "bm25_or": [
+          "howto/enum.txt"
+        ],
+        "semantic": [
+          "howto/enum.txt",
+          "library/heapq.txt",
+          "library/multiprocessing.txt",
+          "contents.txt",
+          "howto/a-conceptual-overview-of-asyncio.txt"
+        ],
+        "hybrid": [
+          "howto/enum.txt",
+          "library/heapq.txt",
+          "library/multiprocessing.txt",
+          "contents.txt",
+          "howto/a-conceptual-overview-of-asyncio.txt"
+        ]
+      }
+    },
+    {
+      "query": "wildcarded patternmatching",
+      "group": "paraphrase",
+      "relevant_paths": [
+        "library/re.txt"
+      ],
+      "zero_overlap_verified": true,
+      "p_at_5": {
+        "bm25_and": 0.0,
+        "bm25_or": 0.0,
+        "semantic": 0.0,
+        "hybrid": 0.0
+      },
+      "top5": {
+        "bm25_and": [],
+        "bm25_or": [],
+        "semantic": [
+          "whatsnew/3.10.txt",
+          "reference/grammar.txt",
+          "reference/compound_stmts.txt",
+          "library/pathlib.txt",
+          "howto/regex.txt"
+        ],
+        "hybrid": [
+          "whatsnew/3.10.txt",
+          "reference/grammar.txt",
+          "reference/compound_stmts.txt",
+          "library/pathlib.txt",
+          "howto/regex.txt"
+        ]
+      }
+    },
+    {
+      "query": "interoperable payload marshalling",
+      "group": "paraphrase",
+      "relevant_paths": [
+        "library/json.txt"
+      ],
+      "zero_overlap_verified": true,
+      "p_at_5": {
+        "bm25_and": 0.0,
+        "bm25_or": 0.0,
+        "semantic": 0.0,
+        "hybrid": 0.0
+      },
+      "top5": {
+        "bm25_and": [
+          "whatsnew/changelog.txt"
+        ],
+        "bm25_or": [
+          "library/email.compat32-message.txt",
+          "library/email.mime.txt",
+          "library/email.encoders.txt",
+          "library/pickle.txt",
+          "library/email.message.txt"
+        ],
+        "semantic": [
+          "library/marshal.txt",
+          "library/index.txt",
+          "c-api/marshal.txt",
+          "library/email.compat32-message.txt",
+          "whatsnew/3.4.txt"
+        ],
+        "hybrid": [
+          "library/email.compat32-message.txt",
+          "library/pickle.txt",
+          "library/email.mime.txt",
+          "library/marshal.txt",
+          "library/email.parser.txt"
+        ]
+      }
+    },
+    {
+      "query": "hierarchical breadcrumbs",
+      "group": "paraphrase",
+      "relevant_paths": [
+        "library/pathlib.txt"
+      ],
+      "zero_overlap_verified": true,
+      "p_at_5": {
+        "bm25_and": 0.0,
+        "bm25_or": 0.0,
+        "semantic": 0.0,
+        "hybrid": 0.0
+      },
+      "top5": {
+        "bm25_and": [],
+        "bm25_or": [
+          "library/xmlrpc.server.txt",
+          "library/xml.dom.pulldom.txt",
+          "library/logging.txt",
+          "howto/logging.txt",
+          "tutorial/modules.txt"
+        ],
+        "semantic": [
+          "library/xml.etree.elementtree.txt",
+          "howto/logging.txt",
+          "howto/mro.txt",
+          "library/tkinter.ttk.txt",
+          "library/collections.txt"
+        ],
+        "hybrid": [
+          "howto/logging.txt",
+          "library/xml.etree.elementtree.txt",
+          "library/logging.txt",
+          "library/tkinter.ttk.txt",
+          "library/tkinter.txt"
+        ]
+      }
+    },
+    {
+      "query": "tallying multiplicities",
+      "group": "paraphrase",
+      "relevant_paths": [
+        "library/collections.txt"
+      ],
+      "zero_overlap_verified": true,
+      "p_at_5": {
+        "bm25_and": 0.0,
+        "bm25_or": 0.0,
+        "semantic": 0.2,
+        "hybrid": 0.2
+      },
+      "top5": {
+        "bm25_and": [],
+        "bm25_or": [
+          "whatsnew/2.7.txt"
+        ],
+        "semantic": [
+          "library/collections.txt",
+          "whatsnew/3.2.txt",
+          "whatsnew/3.3.txt",
+          "whatsnew/2.7.txt",
+          "library/itertools.txt"
+        ],
+        "hybrid": [
+          "whatsnew/2.7.txt",
+          "library/collections.txt",
+          "whatsnew/3.2.txt",
+          "whatsnew/3.3.txt",
+          "library/itertools.txt"
+        ]
+      }
+    }
+  ],
+  "mean_p_at_5": {
+    "lab03": {
+      "bm25_and": 0.22,
+      "bm25_or": 0.22,
+      "semantic": 0.24000000000000002,
+      "hybrid": 0.24000000000000002
+    },
+    "paraphrase": {
+      "bm25_and": 0.0,
+      "bm25_or": 0.0,
+      "semantic": 0.04,
+      "hybrid": 0.04
+    },
+    "all": {
+      "bm25_and": 0.14666666666666667,
+      "bm25_or": 0.14666666666666667,
+      "semantic": 0.17333333333333334,
+      "hybrid": 0.17333333333333334
+    }
+  }
+}
