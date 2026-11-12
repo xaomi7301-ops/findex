@@ -10,6 +10,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Protocol
 
+from findex.corpus import iter_documents
 from findex.index import PlainPosting, Posting
 from findex.object_model import Index
 from findex.query import parse
@@ -86,7 +87,15 @@ def snippet_for(index: Index, doc_id: int, terms: tuple[str, ...], *, radius: in
     relative = index.doc_meta[doc_id].path
     source = index.corpus_root / Path(relative)
     try:
-        text = source.read_text(encoding="utf-8")
+        if index.corpus_root.suffix.lower() == ".jsonl":
+            text = next(
+                (doc.text for doc in iter_documents(index.corpus_root) if doc.doc_id == relative),
+                "",
+            )
+            if not text:
+                return "[snippet unavailable: document not found]"
+        else:
+            text = source.read_text(encoding="utf-8")
     except (OSError, UnicodeError):
         return "[snippet unavailable: document not found]"
 
