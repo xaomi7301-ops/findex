@@ -1,4 +1,5 @@
 """Lab 08 scorer-only benchmark: repeated, warmed, same corpus and candidates."""
+
 from __future__ import annotations
 
 import argparse

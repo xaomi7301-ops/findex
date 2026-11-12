@@ -3,6 +3,7 @@
 Run from the repository root: uv run python scripts/lab08_profile.py cprofile
 Then use the sampling and scalene stages. Raw .prof files stay in data/.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -21,8 +22,13 @@ DOCS = Path("docs")
 INDEX = DATA / "index-before.bin"
 QUERY = "python OR asyncio OR thread"
 BUILD = [
-    "index", str(CORPUS), "--out", str(INDEX),
-    "--positions", "--executor", "serial",
+    "index",
+    str(CORPUS),
+    "--out",
+    str(INDEX),
+    "--positions",
+    "--executor",
+    "serial",
 ]
 SEARCH = ["search", str(INDEX), QUERY, "--corpus", str(CORPUS), "--k", "10"]
 
@@ -59,8 +65,14 @@ def main() -> None:
     if args.stage == "cprofile":
         for name, command in (("index", BUILD), ("search", SEARCH)):
             run(
-                sys.executable, "-m", "cProfile", "-o", str(DATA / f"{name}.prof"),
-                "-m", "findex.cli", *command,
+                sys.executable,
+                "-m",
+                "cProfile",
+                "-o",
+                str(DATA / f"{name}.prof"),
+                "-m",
+                "findex.cli",
+                *command,
             )
             report(name)
         info = {
@@ -84,17 +96,39 @@ def main() -> None:
     elif args.stage == "sampling":
         for name, command in (("index", BUILD), ("search", SEARCH)):
             run(
-                "uv", "run", "--locked", "--with", "py-spy", "py-spy", "record",
-                "--subprocesses", "--output", str(DOCS / f"lab08-{name}-flame.svg"),
-                "--", sys.executable, "-m", "findex.cli", *command,
+                "uv",
+                "run",
+                "--locked",
+                "--with",
+                "py-spy",
+                "py-spy",
+                "record",
+                "--subprocesses",
+                "--output",
+                str(DOCS / f"lab08-{name}-flame.svg"),
+                "--",
+                sys.executable,
+                "-m",
+                "findex.cli",
+                *command,
             )
     else:
         for name, command in (("index", BUILD), ("search", SEARCH)):
             run(
-                "uv", "run", "--locked", "--with", "scalene==2.4.0", "scalene", "run",
-                "--cpu-only", "--profile-all", "--outfile",
+                "uv",
+                "run",
+                "--locked",
+                "--with",
+                "scalene==2.4.0",
+                "scalene",
+                "run",
+                "--cpu-only",
+                "--profile-all",
+                "--outfile",
                 str(DOCS / f"lab08-{name}-scalene.json"),
-                "scripts/lab08_profile_target.py", "---", *command,
+                "scripts/lab08_profile_target.py",
+                "---",
+                *command,
             )
     print(f"Finished {args.stage}. Reports are in docs/.", flush=True)
 

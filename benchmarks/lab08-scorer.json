@@ -1,0 +1,88 @@
+{
+  "documents": 514,
+  "vocabulary": 41255,
+  "conversion_ms": 342.6022000003286,
+  "numeric_buffer_bytes": 2515176,
+  "repeats": 100,
+  "k": 10,
+  "rows": [
+    {
+      "query": "the",
+      "category": "common",
+      "scorer": "BM25",
+      "docs_matched": 512,
+      "python_ms": 0.6832,
+      "numpy_ms": 0.06295,
+      "speedup": 10.853057982525813,
+      "python_min_ms": 0.6605,
+      "python_max_ms": 1.2159,
+      "numpy_min_ms": 0.0546,
+      "numpy_max_ms": 0.1703
+    },
+    {
+      "query": "the",
+      "category": "common",
+      "scorer": "TfIdf",
+      "docs_matched": 512,
+      "python_ms": 0.5273,
+      "numpy_ms": 0.0484,
+      "speedup": 10.894628099173554,
+      "python_min_ms": 0.5129,
+      "python_max_ms": 0.8625,
+      "numpy_min_ms": 0.0429,
+      "numpy_max_ms": 0.153
+    },
+    {
+      "query": "frozenset",
+      "category": "rare",
+      "scorer": "BM25",
+      "docs_matched": 23,
+      "python_ms": 0.0429,
+      "numpy_ms": 0.03585,
+      "speedup": 1.196652719665272,
+      "python_min_ms": 0.0379,
+      "python_max_ms": 0.1287,
+      "numpy_min_ms": 0.0314,
+      "numpy_max_ms": 0.1267
+    },
+    {
+      "query": "frozenset",
+      "category": "rare",
+      "scorer": "TfIdf",
+      "docs_matched": 23,
+      "python_ms": 0.0339,
+      "numpy_ms": 0.0292,
+      "speedup": 1.160958904109589,
+      "python_min_ms": 0.03,
+      "python_max_ms": 0.0987,
+      "numpy_min_ms": 0.0262,
+      "numpy_max_ms": 0.0741
+    },
+    {
+      "query": "python OR asyncio OR thread",
+      "category": "three terms",
+      "scorer": "BM25",
+      "docs_matched": 441,
+      "python_ms": 0.7734,
+      "numpy_ms": 0.08565,
+      "speedup": 9.029772329246935,
+      "python_min_ms": 0.754,
+      "python_max_ms": 1.2533,
+      "numpy_min_ms": 0.0782,
+      "numpy_max_ms": 0.228
+    },
+    {
+      "query": "python OR asyncio OR thread",
+      "category": "three terms",
+      "scorer": "TfIdf",
+      "docs_matched": 441,
+      "python_ms": 0.5831,
+      "numpy_ms": 0.06709999999999999,
+      "speedup": 8.690014903129658,
+      "python_min_ms": 0.5603,
+      "python_max_ms": 0.8621,
+      "numpy_min_ms": 0.0603,
+      "numpy_max_ms": 0.1206
+    }
+  ]
+}

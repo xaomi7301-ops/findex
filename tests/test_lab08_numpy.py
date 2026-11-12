@@ -1,4 +1,5 @@
 """Lab 08: compare scalar/vector scores, ordering, and timing on fixtures."""
+
 from __future__ import annotations
 
 import numpy as np

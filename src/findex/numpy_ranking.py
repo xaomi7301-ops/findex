@@ -3,6 +3,7 @@
 The positional Lab 02 index stays readable for Boolean/phrase queries and
 serialization. A read-only numeric view is created once per loaded Index.
 """
+
 from __future__ import annotations
 
 import math
@@ -59,9 +60,7 @@ class NumpyPostings:
                 ids[start:end] = np.fromiter(
                     (p.doc_id for p in postings), dtype=np.int32, count=count
                 )
-                tfs[start:end] = np.fromiter(
-                    (p.tf for p in postings), dtype=np.int32, count=count
-                )
+                tfs[start:end] = np.fromiter((p.tf for p in postings), dtype=np.int32, count=count)
             offsets[term] = (start, end)
             start = end
         ids.flags.writeable = False
