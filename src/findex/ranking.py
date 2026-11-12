@@ -126,24 +126,14 @@ def snippet_for(index: Index, doc_id: int, terms: tuple[str, ...], *, radius: in
     return ("…" if start > 0 else "") + excerpt + ("…" if end < len(text) else "")
 
 
-@timed
-def ranked_search(
+def score_python(
     index: Index,
-    query: str,
-    *,
-    scorer: Scorer | None = None,
-    k: int = 10,
-) -> list[SearchResult]:
-    """Evaluate the Boolean AST, score matching docs, and heap-select the best k."""
-    if k < 0:
-        raise ValueError("k must be nonnegative")
-    if k == 0:
-        return []
-    scorer = scorer if scorer is not None else BM25()
-    matched = index.matching_ids(query)
-    if not matched:
-        return []
-    positive_terms = tuple(dict.fromkeys(parse(query).positive_terms()))
+    matched: frozenset[int],
+    positive_terms: tuple[str, ...],
+    scorer: Scorer,
+    k: int,
+) -> list[tuple[int, float]]:
+    """Original Lab 03 scalar loop, retained for verification and benchmarks."""
     scores: dict[int, float] = defaultdict(float)
 
     for term in positive_terms:
@@ -164,6 +154,33 @@ def ranked_search(
     for doc_id in matched:
         scores.setdefault(doc_id, 0.0)
     ranked = heapq.nlargest(k, scores.items(), key=lambda value: (value[1], -value[0]))
+    return ranked
+
+
+@timed
+def ranked_search(
+    index: Index,
+    query: str,
+    *,
+    scorer: Scorer | None = None,
+    k: int = 10,
+) -> list[SearchResult]:
+    """Use vectorized built-in scorers; custom Scorer objects remain supported."""
+    if k < 0:
+        raise ValueError("k must be nonnegative")
+    if k == 0:
+        return []
+    scorer = scorer if scorer is not None else BM25()
+    matched = index.matching_ids(query)
+    if not matched:
+        return []
+    positive_terms = tuple(dict.fromkeys(parse(query).positive_terms()))
+    if isinstance(scorer, (BM25, TfIdf)):
+        from findex.numpy_ranking import score_numpy
+
+        ranked = score_numpy(index, matched, positive_terms, scorer, k)
+    else:
+        ranked = score_python(index, matched, positive_terms, scorer, k)
     return [
         SearchResult(
             doc_id=doc_id,

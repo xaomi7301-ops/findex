@@ -11,10 +11,14 @@ from collections.abc import Generator, Iterator, Mapping
 from contextlib import contextmanager
 from functools import cached_property, lru_cache
 from pathlib import Path
+from typing import TYPE_CHECKING
 
 from findex.index import InvertedIndex, PostingList, build_index
 from findex.store import load
 from findex.timing import timed
+
+if TYPE_CHECKING:
+    from findex.numpy_ranking import NumpyPostings
 
 logger = logging.getLogger(__name__)
 
@@ -76,6 +80,14 @@ class Index(Mapping[str, PostingList]):
             return 0.0
         return sum(self._raw.doc_lengths.values()) / self.num_docs
 
+    @cached_property
+    def numpy_postings(self) -> NumpyPostings:
+        """One compact numeric representation, reused across searches."""
+        from findex.numpy_ranking import NumpyPostings
+
+        self._ensure_open()
+        return NumpyPostings.from_index(self)
+
     @property
     def has_positions(self) -> bool:
         self._ensure_open()
@@ -124,6 +136,7 @@ class Index(Mapping[str, PostingList]):
             return
         self._resolve.cache_clear()
         self.__dict__.pop("avg_doc_length", None)
+        self.__dict__.pop("numpy_postings", None)
         self._raw.postings.clear()
         self._raw.doc_lengths.clear()
         self._raw.doc_meta.clear()
