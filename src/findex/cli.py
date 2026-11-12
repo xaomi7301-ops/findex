@@ -39,6 +39,12 @@ class ScorerChoice(StrEnum):
     tfidf = "tfidf"
 
 
+class SearchModeChoice(StrEnum):
+    lexical = "lexical"
+    semantic = "semantic"
+    hybrid = "hybrid"
+
+
 class ExecutorChoice(StrEnum):
     """Execution strategies for deterministic map/reduce indexing."""
 
@@ -166,12 +172,21 @@ def search_command(
     scorer: Annotated[ScorerChoice, typer.Option("--scorer")] = ScorerChoice.bm25,
     is_json: Annotated[bool, typer.Option("--json", help="JSON Lines on stdout.")] = False,
     corpus: Annotated[Path | None, typer.Option("--corpus")] = None,
+    mode: Annotated[SearchModeChoice, typer.Option("--mode")] = SearchModeChoice.lexical,
+    embeddings: Annotated[Path, typer.Option("--embeddings")] = Path("data/lab08/embeddings"),
+    model_dir: Annotated[Path, typer.Option("--model-dir")] = Path("data/lab08/model"),
 ) -> None:
     """Search a saved index; Rich table, or JSONL suitable for a pipe."""
     try:
         impl: Scorer = BM25() if scorer is ScorerChoice.bm25 else TfIdf()
         with open_index(index, corpus_root=corpus) as ix:
-            results = ranked_search(ix, query, scorer=impl, k=k)
+            if mode is SearchModeChoice.lexical:
+                results = ranked_search(ix, query, scorer=impl, k=k)
+            else:
+                from findex.semantic import MiniLM, SemanticData, SemanticSearch
+
+                semantic = SemanticSearch(SemanticData.load(embeddings, ix), MiniLM(model_dir))
+                results = semantic.search(ix, query, mode=mode.value, k=k)
             if is_json:
                 for result in results:
                     typer.echo(json.dumps(asdict(result), ensure_ascii=False))
@@ -203,6 +218,28 @@ def _total_frequency(postings: PostingList) -> int:
     if isinstance(postings, array):
         return sum(int(value) for value in postings[1::2])
     return sum(item.tf for item in postings)
+
+
+@app.command("embed")
+def embed_command(
+    index: Annotated[Path, typer.Argument(help="Trusted index file.")],
+    corpus: Annotated[Path, typer.Option("--corpus")] = Path("data/python_docs"),
+    out: Annotated[Path, typer.Option("--out")] = Path("data/lab08/embeddings"),
+    model_dir: Annotated[Path, typer.Option("--model-dir")] = Path("data/lab08/model"),
+    batch_size: Annotated[int, typer.Option("--batch-size", min=1)] = 16,
+    threads: Annotated[int, typer.Option("--threads", min=1)] = 2,
+) -> None:
+    """Build normalized MiniLM chunk embeddings for the indexed documents."""
+    from findex.semantic import MiniLM, build_embeddings
+
+    try:
+        with open_index(index, corpus_root=corpus) as ix:
+            result = build_embeddings(
+                ix, corpus, out, MiniLM(model_dir, threads=threads), batch_size=batch_size
+            )
+        typer.echo(f"Saved {result.matrix.shape[0]} chunks, {result.matrix.shape[1]} dimensions: {out}")
+    except (OSError, ValueError, EOFError, ImportError) as exc:
+        _fail(exc)
 
 
 @app.command("serve")
