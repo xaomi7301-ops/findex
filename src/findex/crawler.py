@@ -5,7 +5,7 @@ import asyncio
 import logging
 import random
 import time
-from collections.abc import AsyncIterator, Awaitable, Callable, Iterable
+from collections.abc import AsyncGenerator, Awaitable, Callable, Iterable
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from email.utils import parsedate_to_datetime
@@ -258,7 +258,7 @@ async def crawl(
     allowed_domains: Iterable[str] | None = None,
     stats: CrawlStats | None = None,
     transport: httpx.AsyncBaseTransport | None = None,
-) -> AsyncIterator[Page]:
+) -> AsyncGenerator[Page, None]:
     """Yield successful HTML pages; cancel workers at the budget or on close.
 
     The allowlist is exact origins (scheme, host, port), not suffix matching.
