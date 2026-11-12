@@ -1,0 +1,56 @@
+{
+  "seed": "http://127.0.0.1:8765/",
+  "max_pages": 200,
+  "per_host": 10,
+  "delay_s": 0.001,
+  "server_latency_s": 0.08,
+  "debug": true,
+  "slow_callback_warnings": {
+    "1": 0,
+    "5": 0,
+    "20": 0
+  },
+  "results": [
+    {
+      "concurrency": 1,
+      "pages": 200,
+      "wall_s": 20.411,
+      "pages_per_s": 9.7986,
+      "errors": 0,
+      "peak_rss_mib": 51.938,
+      "retries": 1,
+      "peak_in_flight": 1
+    },
+    {
+      "concurrency": 5,
+      "pages": 200,
+      "wall_s": 4.6545,
+      "pages_per_s": 42.9695,
+      "errors": 0,
+      "peak_rss_mib": 52.547,
+      "retries": 1,
+      "peak_in_flight": 5
+    },
+    {
+      "concurrency": 20,
+      "pages": 200,
+      "wall_s": 2.9529,
+      "pages_per_s": 67.7296,
+      "errors": 0,
+      "peak_rss_mib": 55.156,
+      "retries": 1,
+      "peak_in_flight": 10
+    }
+  ],
+  "failure_and_debug_log": [
+    "2026-11-12 10:22:53,869 INFO url=http://127.0.0.1:8765/page/1 status=429 bytes=11 elapsed=0.093s attempt=1 error=-",
+    "2026-11-12 10:22:53,869 WARNING retry url=http://127.0.0.1:8765/page/1 status=429 delay=1.000s",
+    "2026-11-12 10:22:54,981 INFO url=http://127.0.0.1:8765/page/1 status=200 bytes=4208 elapsed=0.098s attempt=2 error=-",
+    "2026-11-12 10:23:14,622 INFO url=http://127.0.0.1:8765/page/1 status=429 bytes=11 elapsed=0.110s attempt=1 error=-",
+    "2026-11-12 10:23:14,622 WARNING retry url=http://127.0.0.1:8765/page/1 status=429 delay=1.000s",
+    "2026-11-12 10:23:15,737 INFO url=http://127.0.0.1:8765/page/1 status=200 bytes=4208 elapsed=0.106s attempt=2 error=-",
+    "2026-11-12 10:23:19,696 INFO url=http://127.0.0.1:8765/page/1 status=429 bytes=11 elapsed=0.115s attempt=1 error=-",
+    "2026-11-12 10:23:19,696 WARNING retry url=http://127.0.0.1:8765/page/1 status=429 delay=1.000s",
+    "2026-11-12 10:23:20,986 INFO url=http://127.0.0.1:8765/page/1 status=200 bytes=4208 elapsed=0.279s attempt=2 error=-"
+  ]
+}
