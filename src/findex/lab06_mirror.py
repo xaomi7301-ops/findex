@@ -3,6 +3,7 @@
 Serve excerpts of the Python documentation already downloaded in Lab 01.
 The server binds only to loopback, injects latency and one HTTP 429 per run.
 """
+
 from __future__ import annotations
 
 import argparse
@@ -37,7 +38,10 @@ class MirrorHandler(BaseHTTPRequestHandler):
         pass
 
     def send_body(
-        self, body: str, status: int = 200, content_type: str = "text/html",
+        self,
+        body: str,
+        status: int = 200,
+        content_type: str = "text/html",
         retry_after: str | None = None,
     ) -> None:
         data = body.encode("utf-8")
@@ -126,26 +130,34 @@ def benchmark(root: Path, port: int, latency: float, output: Path) -> None:
         log = output / f"crawl-{concurrency}.log"
         with mirror(pages, port, latency):
             result = run_crawl(
-                seed, out=output / f"crawl-{concurrency}.jsonl", log=log,
-                max_pages=200, concurrency=concurrency, per_host=10,
-                delay=0.001, debug=True,
+                seed,
+                out=output / f"crawl-{concurrency}.jsonl",
+                log=log,
+                max_pages=200,
+                concurrency=concurrency,
+                per_host=10,
+                delay=0.001,
+                debug=True,
             )
         if result.pages != 200:
             raise RuntimeError(f"Expected 200 pages, got {result.pages}")
         rows.append(result)
         lines = log.read_text(encoding="utf-8").splitlines()
         evidence.extend(line for line in lines if "status=429" in line or "retry url=" in line)
-        evidence.extend(
-            line for line in lines if "page/1 status=200" in line
-        )
+        evidence.extend(line for line in lines if "page/1 status=200" in line)
         slow = [line for line in lines if "Executing " in line and " took " in line]
         print(f"concurrency={concurrency}: {json.dumps(asdict(result))}")
         print(f"asyncio slow callback warnings: {len(slow)}")
         if slow:
             evidence.extend(slow)
     report = {
-        "seed": seed, "max_pages": 200, "per_host": 10, "delay_s": 0.001,
-        "server_latency_s": latency, "debug": True, "results": [asdict(row) for row in rows],
+        "seed": seed,
+        "max_pages": 200,
+        "per_host": 10,
+        "delay_s": 0.001,
+        "server_latency_s": latency,
+        "debug": True,
+        "results": [asdict(row) for row in rows],
         "failure_and_debug_log": evidence,
     }
     target = output / "lab06-results.json"

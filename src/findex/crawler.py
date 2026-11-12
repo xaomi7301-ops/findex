@@ -1,4 +1,5 @@
 """Polite asynchronous crawler: one client, bounded requests, streamed pages."""
+
 from __future__ import annotations
 
 import asyncio
@@ -146,14 +147,20 @@ async def fetch(
         size = len(response.content) if response is not None else 0
         logger.info(
             "url=%s status=%s bytes=%d elapsed=%.3fs attempt=%d error=%s",
-            url, status, size, elapsed, attempt + 1, error or "-",
+            url,
+            status,
+            size,
+            elapsed,
+            attempt + 1,
+            error or "-",
         )
         if status is not None:
             retryable = status == 429 or 500 <= status < 600
         if retryable and attempt < retries:
             wait = retry_delay(
                 response.headers.get("Retry-After") if response is not None else None,
-                attempt, base,
+                attempt,
+                base,
             )
             logger.warning("retry url=%s status=%s delay=%.3fs", url, status, wait)
             if gate is not None:
@@ -161,7 +168,11 @@ async def fetch(
             await sleep(wait)
             continue
         return FetchResult(
-            url, status, response.text if response is not None else "", size, elapsed,
+            url,
+            status,
+            response.text if response is not None else "",
+            size,
+            elapsed,
             response.headers.get("Content-Type", "") if response is not None else "",
             error,
             response.headers.get("Location", "") if response is not None else "",
@@ -269,7 +280,8 @@ async def crawl(
     seed_urls = [canonicalize(seed) for seed in seeds]
     allowed = (
         {origin(canonicalize(domain)) for domain in allowed_domains}
-        if allowed_domains is not None else {origin(seed) for seed in seed_urls}
+        if allowed_domains is not None
+        else {origin(seed) for seed in seed_urls}
     )
     state = stats if stats is not None else CrawlStats()
     frontier: asyncio.Queue[str] = asyncio.Queue()

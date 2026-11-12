@@ -60,9 +60,7 @@ def test_fetch_timeout_and_retry_ceiling() -> None:
             pass
 
         async with httpx.AsyncClient(transport=httpx.MockTransport(respond)) as client:
-            result = await fetch(
-                client, "https://example.com/a", timeout=0.001, sleep=sleep
-            )
+            result = await fetch(client, "https://example.com/a", timeout=0.001, sleep=sleep)
             assert result.error == "timeout"
             assert count == 4
 
@@ -83,15 +81,22 @@ def test_crawl_robots_dedup_allowlist_and_termination() -> None:
                 '<title>Python</title><a href="/a/?b=2&a=1">A</a>'
                 '<a href="/a?a=1&b=2#fragment">Duplicate</a>'
                 '<a href="/private">Blocked</a><a href="https://other.example/">Other</a>'
-                if path == "/" else "<title>Asyncio</title><p>Event loop</p>"
+                if path == "/"
+                else "<title>Asyncio</title><p>Event loop</p>"
             )
             return httpx.Response(200, text=html, headers={"Content-Type": "text/html"})
 
         async with asyncio.timeout(3):
             pages = [
-                page async for page in crawl(
-                    ["https://example.com/"], concurrency=5, per_host=2,
-                    max_pages=10, delay=0, stats=state, transport=httpx.MockTransport(respond),
+                page
+                async for page in crawl(
+                    ["https://example.com/"],
+                    concurrency=5,
+                    per_host=2,
+                    max_pages=10,
+                    delay=0,
+                    stats=state,
+                    transport=httpx.MockTransport(respond),
                 )
             ]
         assert len(pages) == 2
@@ -117,9 +122,15 @@ def test_crawl_page_cap_and_host_limit() -> None:
 
         async with asyncio.timeout(3):
             pages = [
-                page async for page in crawl(
-                    ["https://example.com/"], concurrency=10, per_host=2,
-                    max_pages=3, delay=0, stats=state, transport=httpx.MockTransport(respond),
+                page
+                async for page in crawl(
+                    ["https://example.com/"],
+                    concurrency=10,
+                    per_host=2,
+                    max_pages=3,
+                    delay=0,
+                    stats=state,
+                    transport=httpx.MockTransport(respond),
                 )
             ]
         assert len(pages) == 3
@@ -142,8 +153,11 @@ def test_redirect_loop_ends_without_duplicate_fetch() -> None:
 
         async with asyncio.timeout(2):
             pages = [
-                page async for page in crawl(
-                    ["https://example.com"], delay=0, transport=httpx.MockTransport(respond),
+                page
+                async for page in crawl(
+                    ["https://example.com"],
+                    delay=0,
+                    transport=httpx.MockTransport(respond),
                 )
             ]
         assert not pages
@@ -158,9 +172,7 @@ def test_jsonl_stream_index_search(tmp_path: Path) -> None:
         {"url": "http://example.com/a", "title": "Python", "text": "asyncio event loop"},
         {"url": "http://example.com/b", "title": "Network", "text": "socket requests"},
     ]
-    corpus.write_text(
-        "\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8"
-    )
+    corpus.write_text("\n".join(json.dumps(row) for row in rows) + "\n", encoding="utf-8")
     documents = iter_documents(corpus)
     assert next(documents).doc_id == rows[0]["url"]
     assert next(documents).doc_id == rows[1]["url"]

@@ -144,8 +144,14 @@ def crawl_command(
 
     try:
         result = run_crawl(
-            seed, out=out, log=log, max_pages=max_pages, concurrency=concurrency,
-            per_host=per_host, delay=delay, debug=debug,
+            seed,
+            out=out,
+            log=log,
+            max_pages=max_pages,
+            concurrency=concurrency,
+            per_host=per_host,
+            delay=delay,
+            debug=debug,
         )
         typer.echo(json.dumps(asdict(result), ensure_ascii=False))
     except (OSError, ValueError) as exc:

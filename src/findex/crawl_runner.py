@@ -76,8 +76,12 @@ async def collect(
     try:
         async with aclosing(
             crawl(
-                [seed], max_pages=max_pages, concurrency=concurrency,
-                per_host=per_host, delay=delay, stats=state,
+                [seed],
+                max_pages=max_pages,
+                concurrency=concurrency,
+                per_host=per_host,
+                delay=delay,
+                stats=state,
             )
         ) as pages:
             async for page in pages:
@@ -124,22 +128,35 @@ def run_crawl(
         with out.open("w", encoding="utf-8") as stream, ParentRssSampler() as rss:
             start = time.perf_counter()
             with Live(
-                dashboard(state, start), console=Console(stderr=True),
-                auto_refresh=False, transient=False,
+                dashboard(state, start),
+                console=Console(stderr=True),
+                auto_refresh=False,
+                transient=False,
             ) as live:
                 asyncio.run(
                     collect(
-                        seed, stream=stream, max_pages=max_pages,
-                        concurrency=concurrency, per_host=per_host, delay=delay,
-                        state=state, start=start, live=live,
+                        seed,
+                        stream=stream,
+                        max_pages=max_pages,
+                        concurrency=concurrency,
+                        per_host=per_host,
+                        delay=delay,
+                        state=state,
+                        start=start,
+                        live=live,
                     ),
                     debug=debug,
                 )
             wall = time.perf_counter() - start
         return CrawlMeasurement(
-            concurrency, state.pages, round(wall, 4),
-            round(state.pages / max(wall, 0.001), 4), state.errors,
-            round(rss.peak_bytes / 1048576, 3), state.retries, state.peak_in_flight,
+            concurrency,
+            state.pages,
+            round(wall, 4),
+            round(state.pages / max(wall, 0.001), 4),
+            state.errors,
+            round(rss.peak_bytes / 1048576, 3),
+            state.retries,
+            state.peak_in_flight,
         )
     finally:
         listener.stop()
