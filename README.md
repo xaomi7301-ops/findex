@@ -1,4 +1,174 @@
-# findex — Лабораторна робота №1
+# findex — Python search engine
+
+Пошукова система документації Python: Boolean, BM25/TF-IDF на NumPy, семантичний MiniLM і гібридний RRF-пошук через CLI та FastAPI.
+
+**[Відкрити публічний сайт](https://findex-search-1n7g.onrender.com/)** · [API](https://findex-search-1n7g.onrender.com/docs) · [Health](https://findex-search-1n7g.onrender.com/health) · [CI](https://github.com/xaomi7301-ops/findex/actions)
+
+Версія коду: **1.0.0**. Публічний деплой Lab 08 ще перевіряється; остання підтверджена публічна версія — Lab 07.
+
+| Корпус | Публічний p95 (Lab 07) | Найбільше прискорення скорера (Lab 08) |
+|---:|---:|---:|
+| **514 документів** | **1308.47 мс** | **10.89×** |
+
+Демо GIF та відео: будуть додані після запису реального пошуку у браузері.  
+Автор: Калініченко Олександр Олександрович. Навчальний проєкт, лабораторні 1–8.
+
+## Швидкий старт
+
+Python 3.13, Git, uv. Для Docker і створення ембедингів потрібен доступ до Інтернету.
+
+```powershell
+git clone https://github.com/xaomi7301-ops/findex.git
+cd findex
+uv sync --locked --python 3.13
+uv run python scripts/download_python_docs.py
+uv run findex index data/python_docs --out index.bin --positions --executor serial
+uv run findex -v embed index.bin --corpus data/python_docs --threads 4
+uv run findex search index.bin "how to run several tasks at the same time" --mode hybrid --corpus data/python_docs --k 5
+```
+
+Локальний вебсервер:
+
+```powershell
+$env:INDEX_PATH = "index.bin"
+$env:CORPUS_PATH = "data/python_docs"
+$env:EMBEDDINGS_PATH = "data/lab08/embeddings"
+$env:MODEL_DIR = "data/lab08/model"
+uv run findex serve --port 8000
+```
+
+Відкрийте http://127.0.0.1:8000/. На сторінці оберіть режим «За словами», «За змістом» або «Гібридний (RRF)». Зупинка: Ctrl+C.
+
+Docker (окремий термінал, без запущеного локального сервера на 8000):
+
+```powershell
+docker build -t findex:1.0.0 .
+docker run --rm -p 8000:8000 -e INDEX_PATH=/app/data/index.bin -e CORPUS_PATH=/app/data/python_docs -e EMBEDDINGS_PATH=/app/data/lab08/embeddings -e MODEL_DIR=/app/data/lab08/model findex:1.0.0
+```
+
+Docker створює індекс і ембединги у builder-етапі, runtime non-root.
+На Windows Docker Desktop сторінка 1.0.0 та /health успішно відкрилися;
+перевірка результатів пошуку в контейнері та публічний rollout ще тривають.
+
+## Архітектура
+
+```mermaid
+flowchart TD
+  A[Python 3.13 docs / TXT] --> C[iter_documents]
+  B[Дозволений сайт / локальне дзеркало] --> D[asyncio + httpx crawler]
+  D --> E[JSONL]
+  E --> C
+  C --> F[Unicode tokenizer]
+  F --> G[Позиційний інвертований індекс]
+  G --> H[NumPy int32 postings]
+  H --> I[BM25 / TF-IDF + argpartition]
+  C --> J[Фрагменти тексту]
+  J --> K[MiniLM ONNX]
+  K --> L[Нормалізована матриця NPY]
+  L --> M[Cosine / max chunk per document]
+  I --> N[RRF hybrid]
+  M --> N
+  I --> O[FastAPI / CLI]
+  M --> O
+  N --> O
+  O --> P[Jinja2 HTML / JSON API]
+```
+
+Lexical: логічні AND/OR/NOT, дужки, фрази та BM25/TF-IDF. Semantic: природномовний запит англійською, найкращий фрагмент кожного документа. Hybrid: RRF з BM25 OR і cosine ranks, не сума сирих балів. API: /search, /docs/{doc_id}, /stats, /health. Swagger: /docs.
+
+## Вимірювання Lab 08
+
+Windows, AMD Ryzen 5 7430U (6 фізичних / 12 логічних ядер), Python 3.13.
+Корпус: 514 документів, 1 921 193 токени, 41 255 термінів; 18 301 фрагмент × 384 float32. 
+
+### Профілювання до оптимізації
+
+| CLI | cProfile час, с | Виклики функцій | Scalene час, с |
+|---|---:|---:|---:|
+| index | 12.666 | 11 387 038 | 6.749 |
+| search (3 терміни) | 1.854 | 2 841 452 | 1.469 |
+
+[Гіпотези та розподіл Python/native/system](docs/LAB08_BASELINE.md) · [Flame graph index](docs/lab08-index-flame.svg) · [Flame graph search](docs/lab08-search-flame.svg).
+cProfile включає CLI, I/O і завантаження pickle; це не час одного скорера.
+
+### NumPy, медіани 100 повторів (top-10)
+
+| Запит | Скорер | Python, мс | NumPy, мс | Прискорення |
+|---|---|---:|---:|---:|
+| the | BM25 | 0.6832 | 0.06295 | 10.85× |
+| the | TF-IDF | 0.5273 | 0.0484 | 10.89× |
+| frozenset | BM25 | 0.0429 | 0.03585 | 1.20× |
+| frozenset | TF-IDF | 0.0339 | 0.0292 | 1.16× |
+| python OR asyncio OR thread | BM25 | 0.7734 | 0.08565 | 9.03× |
+| python OR asyncio OR thread | TF-IDF | 0.5831 | 0.0671 | 8.69× |
+
+Числові буфери: 2 515 176 байтів, одноразове створення 342.60 мс.
+Порівнюється однаковий набір кандидатів і результатів на вже завантаженому індексі.
+Короткий список frozenset (23 документи) майже не амортизує накладні витрати NumPy.
+[Сирі вимірювання](benchmarks/lab08-scorer.json) · [Аналіз](docs/LAB08_NUMPY.md).
+
+### Precision@5: 15 запитів
+
+| Запит | Група | BM25 AND | BM25 OR | Semantic | Hybrid |
+|---|---|---:|---:|---:|---:|
+| asyncio tasks | Lab 03 | 0.20 | 0.20 | 0.20 | 0.20 |
+| regular expression | Lab 03 | 0.40 | 0.40 | 0.40 | 0.40 |
+| json encoder | Lab 03 | 0.20 | 0.20 | 0.20 | 0.20 |
+| pickle serialization | Lab 03 | 0.20 | 0.20 | 0.20 | 0.20 |
+| pathlib paths | Lab 03 | 0.20 | 0.20 | 0.40 | 0.40 |
+| functools cache | Lab 03 | 0.20 | 0.20 | 0.20 | 0.20 |
+| threading lock | Lab 03 | 0.20 | 0.20 | 0.20 | 0.20 |
+| unittest mock | Lab 03 | 0.20 | 0.20 | 0.20 | 0.20 |
+| typing protocol | Lab 03 | 0.20 | 0.20 | 0.20 | 0.20 |
+| collections counter | Lab 03 | 0.20 | 0.20 | 0.20 | 0.20 |
+| juggling chores | Paraphrase | 0.00 | 0.00 | 0.00 | 0.00 |
+| wildcarded patternmatching | Paraphrase | 0.00 | 0.00 | 0.00 | 0.00 |
+| interoperable payload marshalling | Paraphrase | 0.00 | 0.00 | 0.00 | 0.00 |
+| hierarchical breadcrumbs | Paraphrase | 0.00 | 0.00 | 0.00 | 0.00 |
+| tallying multiplicities | Paraphrase | 0.00 | 0.00 | 0.20 | 0.20 |
+| Середнє: 10 Lab 03 | | 0.22 | 0.22 | 0.24 | 0.24 |
+| Середнє: 5 paraphrase | | 0.00 | 0.00 | 0.04 | 0.04 |
+| Середнє: всі 15 | | 0.1467 | 0.1467 | 0.1733 | 0.1733 |
+
+Перефразування перевірено на відсутність токенів запиту у цільовому документі.
+Semantic і hybrid дали 13 розмічених влучань із 75 слотів top-5, BM25 — 11.
+Тільки один із п'яти складних перефразованих запитів дав цільове влучання.
+RRF не перевершив semantic за середнім P@5. Вузька ручна розмітка не враховує
+інші потенційно релевантні документи. [Запити та рейтинги](benchmarks/lab08-precision.json).
+
+### Перевірки та відтворення
+
+```powershell
+uv run ruff check .
+uv run pyright
+uv run pytest -q
+uv run python scripts/lab08_scorer_benchmark.py index.bin --repeats 100 --out benchmarks/lab08-scorer.json
+uv run python scripts/lab08_evaluate.py --index index.bin
+```
+
+207 тестів пройшли на Windows за 6.99 с, Pyright strict — 0 помилок.
+CI зберігає результати pytest-benchmark для пошуку й індексації.
+Базові профілі відтворюються з коду lab-07 (див. docs/LAB08_BASELINE.md),
+а не з оптимізованої версії.
+
+## Обмеження
+
+- MiniLM англомовна модель; семантичний режим не виконує Boolean-оператори.
+- Sparse labels і короткий набір запитів не доводять універсальної переваги RRF.
+- NumPy-буфери доповнюють позиційний індекс, а не замінюють його на диску; pickle тільки для довірених файлів.
+- Модель і .npy генеруються під час підготовки. Архів Python 3.13 може змінюватися, тому перевіряйте статистику корпусу.
+- Render Free засинає при простої; мережеві затримки та холодний старт відрізняються від локальних замірів. p95 Lab 07 не є вимірюванням v1.0.0.
+- Краулер дозволений лише для власного або явно дозволеного сайту; лабораторний тест використовує локальне дзеркало.
+
+## Зведені вимірювання та історія лабораторних 1–7
+
+Нижче збережено всі попередні таблиці та пояснення в одному README.
+Команди та версії в цьому історичному розділі відповідають відповідним тегам lab-01 … lab-07, а не поточному релізу.
+
+<details>
+<summary>Розгорнути повний архів лабораторних 1–7</summary>
+
+## Лабораторна №1 — ітератори, генератори та корпус
 
 **Lab 07 — публічна вебадреса:** [https://findex-search-1n7g.onrender.com](https://findex-search-1n7g.onrender.com) · [Swagger](https://findex-search-1n7g.onrender.com/docs) · [Health](https://findex-search-1n7g.onrender.com/health).
 
@@ -1218,3 +1388,5 @@ Free instance може засинати; прогріти перед oha, а х�
 не включати в latency. Публічний тест лише на власному сервісі.
 
 **Здача:** репозиторій із тегом lab-07, публічна адреса вище та фактичні вимірювання oha. [Підготовка до захисту](LAB07_DEFENSE.md).
+
+</details>
