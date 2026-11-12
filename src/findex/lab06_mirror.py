@@ -126,6 +126,7 @@ def benchmark(root: Path, port: int, latency: float, output: Path) -> None:
     seed = f"http://127.0.0.1:{port}/"
     rows: list[CrawlMeasurement] = []
     evidence: list[str] = []
+    debug_warnings: dict[int, int] = {}
     for concurrency in (1, 5, 20):
         log = output / f"crawl-{concurrency}.log"
         with mirror(pages, port, latency):
@@ -147,6 +148,7 @@ def benchmark(root: Path, port: int, latency: float, output: Path) -> None:
         evidence.extend(line for line in lines if "page/1 status=200" in line)
         slow = [line for line in lines if "Executing " in line and " took " in line]
         print(f"concurrency={concurrency}: {json.dumps(asdict(result))}")
+        debug_warnings[concurrency] = len(slow)
         print(f"asyncio slow callback warnings: {len(slow)}")
         if slow:
             evidence.extend(slow)
@@ -157,6 +159,7 @@ def benchmark(root: Path, port: int, latency: float, output: Path) -> None:
         "delay_s": 0.001,
         "server_latency_s": latency,
         "debug": True,
+        "slow_callback_warnings": debug_warnings,
         "results": [asdict(row) for row in rows],
         "failure_and_debug_log": evidence,
     }
